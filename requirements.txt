@@ -3,8 +3,8 @@
 # ── Webcam & Visão Computacional ──────────────────────────────────────────────
 streamlit
 opencv-python
-mediapipe
-protobuf==3.20.3        # Compatibilidade obrigatória com MediaPipe no Windows
+mediapipe==0.10.14      # Mantém legacy Solutions API (mp.solutions.hands)
+protobuf>=4.25.3        # Compatibilidade com MediaPipe no Python 3.12
 
 # ── Processamento de Dados e Matrizes ─────────────────────────────────────────
 numpy
