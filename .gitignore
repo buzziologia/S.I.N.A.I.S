@@ -30,7 +30,8 @@ build/
 *.swo
 
 # ─── Logs e Temporários ─────────────────────────────────────────────────────--
-data/download_log.csv   # log de downloads (pode ser gigante)
+# log de downloads (pode ser gigante)
+data/download_log.csv
 *.log
 
 # ─── Contexto Local de IA (uso pessoal, não vai ao repositório) ──────────────
