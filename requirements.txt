@@ -1,0 +1,22 @@
+# Dependências do Projeto S.I.N.A.I.S
+
+# ── Webcam & Visão Computacional ──────────────────────────────────────────────
+streamlit
+opencv-python
+mediapipe
+protobuf==3.20.3        # Compatibilidade obrigatória com MediaPipe no Windows
+
+# ── Processamento de Dados e Matrizes ─────────────────────────────────────────
+numpy
+pandas
+
+# ── Machine Learning (Deep Learning Temporal) ─────────────────────────────────
+torch
+torchvision
+
+# ── Síntese de Voz ────────────────────────────────────────────────────────────
+gTTS                    # Online (Google TTS)
+pyttsx3                 # Offline (nativo do SO)
+
+# ── Scripts de Coleta do Dicionário INES ──────────────────────────────────────
+requests                # HTTP para download dos vídeos do INES

@@ -1,0 +1,41 @@
+# ─── Ambiente Virtual Python ──────────────────────────────────────────────────
+venv/
+.venv/
+env/
+
+# ─── Dados Brutos e Processados (vídeos e matrizes .npy pesadas) ──────────────
+data/raw_videos/
+data/processed_features/
+data/vocabulario_ines.csv  # regenerável pelo inspect_ines_vocabulary.py
+
+# ─── Pesos do Modelo Treinado (binários grandes) ──────────────────────────────
+models/saved_weights/*.pth
+models/saved_weights/*.h5
+models/saved_weights/*.pt
+
+# ─── Arquivos Python gerados automaticamente ──────────────────────────────────
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.egg-info/
+dist/
+build/
+*.egg
+
+# ─── IDEs ──────────────────────────────────────────────────────────────────────
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# ─── Logs e Temporários ─────────────────────────────────────────────────────--
+data/download_log.csv   # log de downloads (pode ser gigante)
+*.log
+
+# ─── Contexto Local de IA (uso pessoal, não vai ao repositório) ──────────────
+.ai/
+
+# ─── Configurações Locais Sensíveis ──────────────────────────────────────────
+.env
+*.secret
