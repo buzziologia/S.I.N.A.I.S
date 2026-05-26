@@ -4,7 +4,6 @@ venv/
 env/
 
 # ─── Dados Brutos e Processados (vídeos e matrizes .npy pesadas) ──────────────
-data/raw_videos/
 data/processed_features/
 data/vocabulario_ines.csv  # regenerável pelo inspect_ines_vocabulary.py
 
@@ -28,10 +27,7 @@ build/
 .idea/
 *.swp
 *.swo
-
 # ─── Logs e Temporários ─────────────────────────────────────────────────────--
-# log de downloads (pode ser gigante)
-data/download_log.csv
 *.log
 # ─── Configurações Locais Sensíveis ──────────────────────────────────────────
 .env

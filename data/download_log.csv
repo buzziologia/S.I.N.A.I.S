@@ -1,0 +1,85 @@
+ident,palavra,video_file,image_file,hand_file,status,message
+7315,CALMA1,calma1Sm_Prog001.mp4,calma1Sm_Prog001.jpg,cg64.jpg,ERRO,video_download_falhou
+4829,ABATIDO,abatidoSm_Prog001.mp4,abatidoSm_Prog001.jpg,cg53a.jpg,OK,imagem=ERRO | mao=OK
+327,ABORRECIDO,aborrecidoSm_Prog001.mp4,aborrecidoSm_Prog001.jpg,cg46a.jpg,OK,imagem=ERRO | mao=OK
+4464,AFEIÇÃO,afeicaoSm_Prog001.mp4,afeicaoSm_Prog001.jpg,cg53a.jpg,OK,imagem=ERRO | mao=OK
+61,AFETO,afetoSm_Prog001.mp4,afetoSm_Prog001.jpg,cg52.jpg,OK,imagem=ERRO | mao=OK
+6559,AFINIDADE,afinidadeSm_Prog001.mp4,afinidadeSm_Prog001.jpg,cg14.jpg,OK,imagem=ERRO | mao=OK
+4174,ALEGRIA1,alegria1Sm_Prog001.mp4,alegria1Sm_Prog001.jpg,cg64.jpg,OK,imagem=ERRO | mao=OK
+6562,ALEGRIA2,alegria2Sm_Prog001.mp4,alegria2Sm_Prog001.jpg,cg63.jpg,OK,imagem=ERRO | mao=OK
+6738,ALÍVIO,alivioSm_Prog001.mp4,alivioSm_Prog001.jpg,cg63.jpg,OK,imagem=ERRO | mao=OK
+5198,AMBIÇÃO,ambicaoSm_Prog001.mp4,ambicaoSm_Prog001.jpg,cg18a.jpg,OK,imagem=ERRO | mao=OK
+6973,AMIGÁVEL,amigavelSm_Prog001.mp4,amigavelSm_Prog001.jpg,cg63.jpg,OK,imagem=ERRO | mao=OK
+428,AMIZADE,amizadeSm_Prog001.mp4,amizadeSm_Prog001.jpg,cg63.jpg,OK,imagem=ERRO | mao=OK
+9,AMOR,amor1Sm_Prog001.mp4,amor1Sm_Prog001.jpg,cg51a.jpg,OK,imagem=ERRO | mao=OK
+6926,ÂNIMO,animoSm_Prog001.mp4,animoSm_Prog001.jpg,cg64.jpg,OK,imagem=ERRO | mao=OK
+434,ANSIEDADE,ansiedadeSm_Prog001.mp4,ansiedadeSm_Prog001.jpg,cg02.jpg,OK,imagem=ERRO | mao=OK
+7291,APAVORADO,apavoradoSm_Prog001.mp4,apavoradoSm_Prog001.jpg,cg64.jpg,OK,imagem=ERRO | mao=OK
+5223,ATRAÇÃO,atracaoSm_Prog001.mp4,atracaoSm_Prog001.jpg,cg37a.jpg,OK,imagem=ERRO | mao=OK
+555,AVAREZA,avarezaSm_Prog001.mp4,avarezaSm_Prog001.jpg,cg03.jpg,OK,imagem=ERRO | mao=OK
+5173,AVERSÃO,aversaoSm_Prog001.mp4,aversaoSm_Prog001.jpg,cg64.jpg,OK,imagem=ERRO | mao=OK
+7315,CALMA1,calma1Sm_Prog001.mp4,calma1Sm_Prog001.jpg,cg64.jpg,ERRO,video_download_falhou
+7316,CALMA2,calma2Sm_Prog001.mp4,calma2Sm_Prog001.jpg,cg64.jpg,OK,imagem=ERRO | mao=OK
+1315,CARINHO,carinhoSm_Prog001.mp4,carinhoSm_Prog001.jpg,cg52.jpg,OK,imagem=ERRO | mao=OK
+1484,CIÚME,ciumeSm_Prog001.mp4,ciumeSm_Prog001.jpg,cg63.jpg,OK,imagem=ERRO | mao=OK
+6020,COMPAIXÃO,compaixaoSm_Prog001.mp4,compaixaoSm_Prog001.jpg,cg35a.jpg,OK,imagem=ERRO | mao=OK
+1602,CONFIANÇA,confiancaSm_Prog001.mp4,confiancaSm_Prog001.jpg,cg63.jpg,OK,imagem=ERRO | mao=OK
+4139,CONFORTO,confortoSm_Prog001.mp4,confortoSm_Prog001.jpg,cg57.jpg,OK,imagem=ERRO | mao=OK
+1665,CORAGEM,coragemSm_Prog001.mp4,coragemSm_Prog001.jpg,cg57.jpg,OK,imagem=ERRO | mao=OK
+1725,CRENÇA,crencaSm_Prog001.mp4,crencaSm_Prog001.jpg,cg63.jpg,OK,imagem=ERRO | mao=OK
+6436,CULPA,culpaSm_Prog001.mp4,culpaSm_Prog001.jpg,cg11.jpg,OK,imagem=ERRO | mao=OK
+1764,CURIOSIDADE,curiosidadeSm_Prog001.mp4,curiosidadeSm_Prog001.jpg,cg63.jpg,OK,imagem=ERRO | mao=OK
+2329,DEPRESSÃO,depressaoSm_Prog001.mp4,depressaoSm_Prog001.jpg,cg02.jpg,OK,imagem=ERRO | mao=OK
+2384,DESGOSTO,desgostoSm_Prog001.mp4,desgostoSm_Prog001.jpg,cg02.jpg,OK,imagem=ERRO | mao=OK
+2490,DOR,dorSm_Prog001.mp4,dorSm_Prog001.jpg,cg54.jpg,OK,imagem=ERRO | mao=OK
+7010,DÚVIDA,duvidaSm_Prog001.mp4,duvidaSm_Prog001.jpg,cg14.jpg,OK,imagem=ERRO | mao=OK
+2726,EMOÇÃO,emocaoSm_Prog001.mp4,emocaoSm_Prog001.jpg,cg02.jpg,OK,imagem=ERRO | mao=OK
+5179,ESPERANÇA,esperancaSm_Prog001.mp4,esperancaSm_Prog001.jpg,cg01.jpg,OK,imagem=ERRO | mao=OK
+2972,FÉ1,feSm_Prog001.mp4,feSm_Prog001.jpg,cg06.jpg,ERRO,video_download_falhou
+7385,FÉ2,fe2Sm_Prog001.mp4,fe2Sm_Prog001.jpg,cg63.jpg,OK,imagem=ERRO | mao=OK
+6871,FELICIDADE,felicidadeSm_Prog001.mp4,felicidadeSm_Prog001.jpg,cg64.jpg,OK,imagem=ERRO | mao=OK
+3063,FORÇA,forcaSm_Prog001.mp4,forcaSm_Prog001.jpg,cg02.jpg,OK,imagem=ERRO | mao=OK
+4126,INSTINTO,instintoSm_Prog001.mp4,instintoSm_Prog001.jpg,cg46a.jpg,OK,imagem=ERRO | mao=OK
+860,INTERESSE,interesseSm_Prog001.mp4,interesseSm_Prog001.jpg,cg18a.jpg,OK,imagem=ERRO | mao=OK
+5566,INTREPIDEZ,intrepidezSm_Prog001.mp4,intrepidezSm_Prog001.jpg,cg57.jpg,OK,imagem=ERRO | mao=OK
+873,INVEJA,invejaSm_Prog001.mp4,invejaSm_Prog001.jpg,cg15.jpg,OK,imagem=ERRO | mao=OK
+3526,LEMBRANÇA,lembrancaSm_Prog001.mp4,lembrancaSm_Prog001.jpg,cg32.jpg,OK,imagem=ERRO | mao=OK
+3133,MÁGOA,magoaSm_Prog001.mp4,magoaSm_Prog001.jpg,cg02.jpg,OK,imagem=ERRO | mao=OK
+3234,MEDO,medoSm_Prog001.mp4,medoSm_Prog001.jpg,cg33.jpg,OK,imagem=ERRO | mao=OK
+7449,MISERICÓDIA,misericordiaSm_Prog001.mp4,misericordiaSm_Prog001.jpg,cg35a.jpg,OK,imagem=ERRO | mao=OK
+698,NOJO,nojoSm_Prog001.mp4,nojoSm_Prog001.jpg,cg47.jpg,OK,imagem=ERRO | mao=OK
+5584,ÓDIO,odio2Sm_Prog001.mp4,odio2Sm_Prog001.jpg,cg42.jpg,ERRO,video_download_falhou
+2118,ORGULHO1,orgulhoSm_Prog001.mp4,orgulhoSm_Prog001.jpg,cg40.jpg,OK,imagem=ERRO | mao=OK
+5776,ORGULHO2,orgulho2Sm_Prog001.mp4,orgulho2Sm_Prog001.jpg,cg40.jpg,OK,imagem=ERRO | mao=OK
+1778,PACIÊNCIA,pacienciaSm_Prog001.mp4,pacienciaSm_Prog001.jpg,cg24.jpg,OK,imagem=ERRO | mao=OK
+4909,PAIXÃO,paixaoSm_Prog001.mp4,paixaoSm_Prog001.jpg,cg02.jpg,OK,imagem=ERRO | mao=OK
+5861,PAVOR,pavorSm_Prog001.mp4,pavorSm_Prog001.jpg,cg02.jpg,OK,imagem=ERRO | mao=OK
+1864,PENA2,pena2Sm_Prog001.mp4,pena2Sm_Prog001.jpg,cg35a.jpg,OK,imagem=ERRO | mao=OK
+5891,PERCEPÇÃO,percepcaoSm_Prog001.mp4,percepcaoSm_Prog001.jpg,cg32.jpg,OK,imagem=ERRO | mao=OK
+4562,PIEDADE,piedadeSm_Prog001.mp4,piedadeSm_Prog001.jpg,cg35a.jpg,OK,imagem=ERRO | mao=OK
+1991,PRAZER1,prazer1Sm_Prog001.mp4,prazer1Sm_Prog001.jpg,cg01.jpg,OK,imagem=ERRO | mao=OK
+6060,PRAZER2,prazer2Sm_Prog001.mp4,prazer2Sm_Prog001.jpg,cg63.jpg,OK,imagem=ERRO | mao=OK
+6803,PRAZER3,prazer3Sm_Prog001.mp4,prazer3Sm_Prog001.jpg,cg55.jpg,OK,imagem=ERRO | mao=OK
+1995,PRECONCEITO,preconceitoSm_Prog001.mp4,preconceitoSm_Prog001.jpg,cg64.jpg,OK,imagem=ERRO | mao=OK
+6085,PRESSENTIMENTO,pressentimentoSm_Prog001.mp4,pressentimentoSm_Prog001.jpg,cg47.jpg,OK,imagem=ERRO | mao=OK
+6940,RAIVA,raiva2Sm_Prog001.mp4,raiva2Sm_Prog001.jpg,cg02.jpg,OK,imagem=ERRO | mao=OK
+901,RANCOR,rancorSm_Prog001.mp4,rancorSm_Prog001.jpg,cg02.jpg,OK,imagem=ERRO | mao=OK
+4713,RECEIO,receioSm_Prog001.mp4,receioSm_Prog001.jpg,cg33.jpg,OK,imagem=ERRO | mao=OK
+1165,REMORSO,remorsoSm_Prog001.mp4,remorsoSm_Prog001.jpg,cg47.jpg,OK,imagem=ERRO | mao=OK
+963,RESPEITO,respeitoSm_Prog001.mp4,respeitoSm_Prog001.jpg,cg52.jpg,OK,imagem=ERRO | mao=OK
+966,RESPONSABILIDADE,responsabilidadeSm_Prog001.mp4,responsabilidadeSm_Prog001.jpg,cg25.jpg,OK,imagem=ERRO | mao=OK
+5664,RESSENTIMENTO,ressentimentoSm_Prog001.mp4,ressentimentoSm_Prog001.jpg,cg02.jpg,OK,imagem=ERRO | mao=OK
+1050,SAUDADE,saudadeSm_Prog001.mp4,saudadeSm_Prog001.jpg,cg01.jpg,OK,imagem=ERRO | mao=OK
+4782,SENTIMENTO,sentimentoSm_Prog001.mp4,sentimentoSm_Prog001.jpg,cg46a.jpg,OK,imagem=ERRO | mao=OK
+1116,SOFRIMENTO,sofrimentoSm_Prog001.mp4,sofrimentoSm_Prog001.jpg,cg39.jpg,ERRO,video_download_falhou
+1121,SOLIDÃO,solidaoSm_Prog001.mp4,solidaoSm_Prog001.jpg,cg14.jpg,OK,imagem=ERRO | mao=OK
+1141,SUBMISSÃO,submissaoSm_Prog001.mp4,submissaoSm_Prog001.jpg,cg64.jpg,OK,imagem=ERRO | mao=OK
+1162,SUSTO,sustoSm_Prog001.mp4,sustoSm_Prog001.jpg,cg63.jpg,OK,imagem=ERRO | mao=OK
+7100,TÉDIO2,tedio2Sm_Prog001.mp4,tedio2Sm_Prog001.jpg,cg40.jpg,OK,imagem=ERRO | mao=OK
+6583,TENTAÇÃO2,tentacao2Sm_Prog001.mp4,tentacao2Sm_Prog001.jpg,cg04.jpg,OK,imagem=ERRO | mao=OK
+3777,TESÃO,tesaoSm_Prog001.mp4,tesaoSm_Prog001.jpg,cg55.jpg,OK,imagem=ERRO | mao=OK
+3831,TRAUMA,traumaSm_Prog001.mp4,traumaSm_Prog001.jpg,cg24.jpg,OK,imagem=ERRO | mao=OK
+2575,VERGONHA,vergonhaSm_Prog001.mp4,vergonhaSm_Prog001.jpg,cg31.jpg,OK,imagem=ERRO | mao=OK
+4428,VEXAME,vexameSm_Prog001.mp4,vexameSm_Prog001.jpg,cg31.jpg,OK,imagem=ERRO | mao=OK
+7535,VINGANÇA,vinganca2Sm_Prog001.mp4,vinganca2Sm_Prog001.jpg,cg51b.jpg,ERRO,video_download_falhou
+2634,VONTADE,vontadeSm_Prog001.mp4,vontadeSm_Prog001.jpg,cg14.jpg,OK,imagem=ERRO | mao=OK
