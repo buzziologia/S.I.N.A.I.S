@@ -22,6 +22,7 @@
 ├── 📁 scripts/                    # Scripts de ETL e treino (ver scripts/README.md)
 │   ├── 📄 download_ines_videos.py # ✅ Baixa vídeos do Dicionário INES
 │   └── 📄 inspect_ines_vocabulary.py # ✅ Analisa vocabulário
+│   └── 📄 extract_features.py        # ✅ Extrai matrizes temporais (.npy) dos vídeos
 ├── 📄 app.py                      # ✅ Dashboard Streamlit (MVP)
 ├── 📄 requirements.txt            # Dependências do projeto
 └── 📄 .gitignore
@@ -68,6 +69,17 @@ Consulte [`scripts/README.md`](scripts/README.md) para a lista completa de assun
 
 ---
 
+### Fase 2 — Processamento de Dados (Visão Computacional)
+Extrai os pontos-chave (landmarks) espaciais e temporais das mãos utilizando o MediaPipe. Transforma a dinâmica dos vídeos .mp4 em vetores matemáticos para o treinamento da IA.
+
+```bash
+# Extrair landmarks de todos os vídeos baixados
+python scripts/extract_features.py
+```
+Lê os arquivos de vídeo em data/raw_videos/ e gera matrizes isoladas em data/processed_features/{nome}.npy.
+
+---
+
 ### MVP — Dashboard de Rastreamento (app.py)
 
 Interface Streamlit que captura a webcam em tempo real e rastreia os landmarks das mãos via MediaPipe.
@@ -82,7 +94,6 @@ Acesse em `http://localhost:8501`.
 
 ## 🔜 Próximas Fases (A Definir)
 
-- **Fase 2:** Extração de landmarks dos vídeos → matrizes `.npy`
 - **Fase 3:** Treinamento do classificador temporal
 - **Fase 4:** Integração do modelo ao dashboard com tradução e síntese de voz
 
