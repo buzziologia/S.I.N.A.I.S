@@ -44,10 +44,24 @@ python scripts/download_ines_videos.py --assunto SENTIMENTOS
 
 ---
 
+## ✅ Fase 2 — Processamento de Dados (Implementada)
+### `extract_features.py`
+Lê os vídeos em .mp4 baixados na Fase 1 e utiliza o MediaPipe para extrair as coordenadas espaciais (x, y, z) dos pontos-chave (landmarks) das mãos, quadro a quadro.
+Este script converte a dinâmica temporal do vídeo em matrizes numéricas, preparando os dados brutos para o treinamento da inteligência artificial.
+
+```bash
+python scripts/extract_features.py
+```
+
+**Entrada:** Vídeos locais na pasta data/raw_videos/
+
+**Saída:** Matrizes temporais salvas em data/processed_features/{nome_do_video}.npy
+
+---
+
 ## 🔜 Próximas Fases (A Definir)
 
 | Script | Fase | Status |
 |--------|------|--------|
-| `extract_landmarks.py` | Fase 2a — Extração de features com MediaPipe | A implementar |
 | `data_augmentation.py` | Fase 2b — Aumento de dados | A implementar |
 | `train.py` | Fase 3 — Treinamento do classificador | A implementar |
