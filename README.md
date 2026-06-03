@@ -40,7 +40,14 @@ python -m venv venv
 .\\venv\\Scripts\\Activate.ps1   # Windows PowerShell
 source venv/bin/activate         # Linux/macOS
 
-# 3. Instalar dependências
+# 3. Atualizar pip, setuptools e wheel (evita erros de compilação)
+pip install --upgrade pip setuptools wheel
+
+# 4. Instalar PyTorch versão CPU (opcional - MUITO recomendado: reduz o download de 2GB+ para ~150MB)
+# Se quiser a versão padrão com GPU/CUDA completa, pule esta linha.
+pip install torch torchvision --extra-index-url https://download.pytorch.org/whl/cpu
+
+# 5. Instalar as demais dependências do projeto
 pip install -r requirements.txt
 ```
 
