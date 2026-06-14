@@ -6,18 +6,6 @@ Esta pasta contém os scripts utilitários do projeto, organizados por fase do p
 
 ## ✅ Fase 1 — Coleta de Dados (Implementada)
 
-### `inspect_ines_vocabulary.py`
-Analisa o vocabulário disponível no Dicionário Digital do INES **sem baixar nada**.
-Útil para explorar os assuntos disponíveis e decidir o que coletar.
-
-```bash
-python scripts/inspect_ines_vocabulary.py
-```
-
-**Saída:** `data/vocabulario_ines.csv`
-
----
-
 ### `download_ines_videos.py`
 Baixa os artefatos por palavra do Dicionário INES:
 - `{nome}.mp4` — vídeo do sinal em LIBRAS
