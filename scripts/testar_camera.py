@@ -206,6 +206,16 @@ def mapear_videos(classes, dir_videos='data/raw_videos'):
     return mapa
 
 
+def texto_caixa(frame, txt, org, escala=0.7, cor=(255, 255, 255), thick=2):
+    """Desenha texto com uma caixa preta atrás — legível sobre qualquer fundo."""
+    (tw, th), base = cv2.getTextSize(txt, cv2.FONT_HERSHEY_SIMPLEX, escala, thick)
+    x, y = org
+    pad = 7
+    cv2.rectangle(frame, (x - pad, y - th - pad), (x + tw + pad, y + base + pad),
+                  (0, 0, 0), -1)
+    cv2.putText(frame, txt, (x, y), cv2.FONT_HERSHEY_SIMPLEX, escala, cor, thick, cv2.LINE_AA)
+
+
 def main(args):
     # ── Resolve o caminho dos pesos ────────────────────────────────────────────
     if args.pesos is None:
@@ -385,8 +395,7 @@ def main(args):
 
         # Status de rejeição (sem mão / fora do vocabulário)
         if status:
-            cv2.putText(frame, status, (15, h - 35),
-                        cv2.FONT_HERSHEY_SIMPLEX, 0.7, (80, 180, 255), 2, cv2.LINE_AA)
+            texto_caixa(frame, status, (15, h - 62), escala=0.75, cor=(80, 180, 255))
 
         # ── Vídeo de referência da palavra (canto inferior direito) ───────────
         # Só inicia um vídeo novo quando NÃO há outro tocando (não troca no meio).
@@ -412,8 +421,7 @@ def main(args):
                             cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 120), 2, cv2.LINE_AA)
 
         # Instrução no rodapé
-        cv2.putText(frame, "Q: sair", (10, h - 10),
-                    cv2.FONT_HERSHEY_SIMPLEX, 0.5, (150, 150, 150), 1, cv2.LINE_AA)
+        texto_caixa(frame, "Q: sair", (15, h - 28), escala=0.6, cor=(220, 220, 220))
 
         cv2.imshow("S.I.N.A.I.S — Reconhecimento de Libras", frame)
 

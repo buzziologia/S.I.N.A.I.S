@@ -29,7 +29,7 @@ import torch.nn as nn
 from torch.utils.data import DataLoader, TensorDataset
 from collections import Counter
 
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..'))
 from models.lstm_classifier import LIBRASClassifier
 
 DIR_FEATURES = 'data/processed_features'

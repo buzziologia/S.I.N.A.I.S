@@ -11,8 +11,10 @@ models/saved_weights/*.pth
 models/saved_weights/*.h5
 models/saved_weights/*.pt
 
+# ─── Dados Brutos e Processados (vídeos e matrizes .npy pesadas) ──────────────
 raw_videos/
 augmented_features/
+*.zip
 
 # ─── Arquivos Python gerados automaticamente ──────────────────────────────────
 __pycache__/
@@ -34,3 +36,4 @@ build/
 # ─── Configurações Locais Sensíveis ──────────────────────────────────────────
 .env
 *.secret
+*.local.*

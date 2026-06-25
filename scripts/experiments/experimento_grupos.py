@@ -26,7 +26,8 @@ import torch
 import torch.nn as nn
 from torch.utils.data import Dataset, DataLoader
 
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..'))  # raiz → models
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))        # scripts → train
 from models.lstm_classifier import LIBRASClassifier
 import train  # reusa LibrasDataset, splits e pré-processamento/aug
 
