@@ -1,6 +1,6 @@
-# 🤟 S.I.N.A.I.S - Sistema Integrado de Tradução e Processamento de Sinais
+# 🤟 S.I.N.A.I.S — Sistema Integrado de Tradução e Processamento de Sinais
 
-**S.I.N.A.I.S** é um tradutor de LIBRAS em tempo real desenvolvido com foco em acessibilidade e visão computacional.
+**S.I.N.A.I.S** é um tradutor de LIBRAS (Língua Brasileira de Sinais) vídeo → texto em tempo real: a webcam captura o sinal, o MediaPipe extrai os landmarks das mãos e uma LSTM bidirecional classifica a palavra.
 
 **Equipe:**
 * 👤 Ana Clara Guimarães
@@ -10,99 +10,143 @@
 
 ---
 
+## Como funciona
+
+```
+vídeo → MediaPipe Hands (126 features/frame = 2 mãos × 21 landmarks × XYZ)
+      → recorte da janela de atividade + normalização (models/preprocess.py)
+      → LSTM bidirecional (models/lstm_classifier.py)
+      → palavra
+```
+
+Cada frame vira um vetor de 126 valores: a mão rotulada `Left` pelo MediaPipe ocupa as posições 0:63 e a `Right` as posições 63:126 (mão ausente = zeros). As sequências são recortadas para a janela onde há mão detectada, ajustadas para 30 frames e normalizadas (translação ao pulso + escala) — **todo o pré-processamento vive em um único módulo (`models/preprocess.py`)**, compartilhado por treino, avaliação e câmera.
+
+---
+
 ## 📦 Estrutura do Repositório
 
 ```plaintext
 📁 S.I.N.A.I.S/
-├── 📁 data/                       # Dados locais (ver data/README.md)
-│   ├── 📁 raw_videos/             # Vídeos .mp4 do INES (ignorado no git)
-│   └── 📁 processed_features/     # Matrizes .npy extraídas (ignorado no git)
-├── 📁 models/                     # Modelo e pesos treinados (ver models/README.md)
-│   └── 📁 saved_weights/          # Pesos treinados (ignorado no git)
-├── 📁 scripts/                    # Scripts de ETL e treino (ver scripts/README.md)
-│   ├── 📄 download_ines_videos.py # ✅ Baixa vídeos do Dicionário INES
-│   └── 📄 inspect_ines_vocabulary.py # ✅ Analisa vocabulário
-│   └── 📄 extract_features.py        # ✅ Extrai matrizes temporais (.npy) dos vídeos
-├── 📄 app.py                      # ✅ Dashboard Streamlit (MVP)
-├── 📄 requirements.txt            # Dependências do projeto
-└── 📄 .gitignore
+├── 📁 data/                          # Dados locais (ignorados no git)
+│   ├── 📁 raw_videos/                # Vídeos .mp4 do INES (ASSUNTO/PALAVRA/)
+│   ├── 📁 processed_features/        # Matrizes .npy extraídas dos vídeos INES
+│   ├── 📁 augmented_features/        # Variações offline (augmentar_offline.py)
+│   ├── 📁 meus_videos/ + meus_features/           # Vídeos próprios (treino)
+│   ├── 📁 meus_videos_holdout/ + meus_features_holdout/  # Vídeos próprios (teste)
+│   └── 📄 palavras_por_frequencia.csv # Ranking de uso das palavras (PT-BR)
+├── 📁 models/
+│   ├── 📄 preprocess.py              # Pré-processamento ÚNICO (treino = inferência)
+│   ├── 📄 lstm_classifier.py         # LSTM bidirecional
+│   └── 📁 saved_weights/             # Checkpoints: {id}_modelo.pth + {id}_classes.json
+├── 📁 scripts/
+│   ├── 📄 train.py                   # Treino
+│   ├── 📄 avaliar_holdout.py         # Avaliação no hold-out (métrica honesta)
+│   ├── 📄 testar_camera.py           # Reconhecimento ao vivo pela webcam
+│   ├── 📁 training/
+│   │   ├── 📄 extract_features.py    # Vídeo .mp4 → matriz .npy (N, 126)
+│   │   └── 📄 coletar_videos.py      # Coleta de vídeos próprios pela webcam
+│   ├── 📁 utils/
+│   │   ├── 📄 download_ines_videos.py # Baixa o Dicionário INES
+│   │   ├── 📄 augmentar_offline.py    # N variações por .npy
+│   │   └── 📄 ranquear_palavras.py    # Ranking de frequência PT-BR
+│   └── 📁 experiments/README.md      # Registro de experimentos (resultados)
+├── 📄 app.py                         # Dashboard Streamlit (rastreamento de mãos)
+├── 📄 justfile                       # Atalhos de comandos (just <comando>)
+└── 📄 requirements.txt
 ```
 
 ---
 
 ## ⚙️ Setup do Ambiente
 
+O projeto exige **Python 3.11** (o `mediapipe ≥ 0.10.30` removeu a API `solutions.hands` usada aqui). Recomendado via conda:
+
 ```bash
-# 1. Criar ambiente virtual
-python -m venv venv
+conda create -n sinais311 python=3.11
+conda activate sinais311
 
-# 2. Ativar
-.\\venv\\Scripts\\Activate.ps1   # Windows PowerShell
-source venv/bin/activate         # Linux/macOS
-
-# 3. Atualizar pip, setuptools e wheel (evita erros de compilação)
-pip install --upgrade pip setuptools wheel
-
-# 4. Instalar PyTorch versão CPU (opcional - MUITO recomendado: reduz o download de 2GB+ para ~150MB)
-# Se quiser a versão padrão com GPU/CUDA completa, pule esta linha.
+# PyTorch CPU (opcional, reduz o download de 2GB+ para ~150MB)
 pip install torch torchvision --extra-index-url https://download.pytorch.org/whl/cpu
 
-# 5. Instalar as demais dependências do projeto
 pip install -r requirements.txt
 ```
 
+No Windows, defina `PYTHONUTF8=1` (variável de ambiente do usuário) para a saída dos scripts não quebrar acentos.
+
+Opcional: instale o [just](https://github.com/casey/just) (`winget install Casey.Just`) para usar os atalhos do `justfile` — os comandos abaixo mostram as duas formas.
+
 ---
 
-## ✅ O que está implementado
+## 🚀 Pipeline completo
 
-### Fase 1 — Coleta de Dados (Dicionário INES)
-
-Baixa vídeos de sinais LIBRAS e imagens de configuração de mão diretamente do Dicionário Digital do INES.
+### 1. Baixar os vídeos do Dicionário INES
 
 ```bash
-# Inspecionar vocabulário disponível (sem baixar nada)
-python scripts/inspect_ines_vocabulary.py
-
-# Baixar um assunto específico
-python scripts/download_ines_videos.py --assunto SENTIMENTOS
-
-# Baixar tudo (7.000+ palavras — pode demorar horas)
-python scripts/download_ines_videos.py
+just download          # ou: python scripts/utils/download_ines_videos.py
+# só um assunto:       python scripts/utils/download_ines_videos.py --assunto FRUTA
 ```
 
-> O download suporta **retomada automática**: se interrompido, rode o mesmo comando novamente.
+Baixa vídeo + imagem do sinal + configuração de mão por palavra para `data/raw_videos/{ASSUNTO}/{PALAVRA}/`. Suporta **retomada automática** (log em `data/download_log.csv`).
 
-Consulte [`scripts/README.md`](scripts/README.md) para a lista completa de assuntos e detalhes.
-
----
-
-### Fase 2 — Processamento de Dados (Visão Computacional)
-Extrai os pontos-chave (landmarks) espaciais e temporais das mãos utilizando o MediaPipe. Transforma a dinâmica dos vídeos .mp4 em vetores matemáticos para o treinamento da IA.
+### 2. Extrair features dos vídeos
 
 ```bash
-# Extrair landmarks de todos os vídeos baixados
-python scripts/extract_features.py
+just extract           # ou: python scripts/training/extract_features.py
 ```
-Lê os arquivos de vídeo em data/raw_videos/ e gera matrizes isoladas em data/processed_features/{nome}.npy.
 
----
+Converte cada `.mp4` em uma matriz `(N_frames, 126)` salva em `data/processed_features/`. Pula arquivos já processados.
 
-### MVP — Dashboard de Rastreamento (app.py)
-
-Interface Streamlit que captura a webcam em tempo real e rastreia os landmarks das mãos via MediaPipe.
+### 3. Ranquear o vocabulário por frequência de uso
 
 ```bash
-streamlit run app.py
+just ranquear          # gera data/palavras_por_frequencia.csv
 ```
 
-Acesse em `http://localhost:8501`.
+Permite treinar só nas K palavras mais usadas do PT-BR (`--top_k`).
 
----
+### 4. Augmentação offline
 
-## 🔜 Próximas Fases (A Definir)
+```bash
+just augment 9         # 9 variações por .npy → 10 amostras por palavra
+```
 
-- **Fase 3:** Treinamento do classificador temporal
-- **Fase 4:** Integração do modelo ao dashboard com tradução e síntese de voz
+Necessária quando há 1 vídeo por palavra: sem ela não existe divisão treino/validação/teste.
+
+### 5. Coletar vídeos próprios (essencial para generalizar)
+
+```bash
+just coletar --top_k 10 --reps 6 --holdout 2
+```
+
+Grava você sinalizando pela webcam, com vídeo de referência do INES na tela, dicas de variação por repetição e revisão de cada take. As últimas `--holdout` reps vão para `data/meus_features_holdout/` (nunca entram no treino → avaliação honesta).
+
+> **Por quê:** o modelo treinado só com os vídeos do INES (1 sinalizante) não generaliza para outras pessoas (*domain shift*). No experimento com as 10 palavras mais frequentes, incluir 4 repetições próprias por palavra elevou a acurácia no hold-out de **35% para 90%**.
+
+### 6. Treinar
+
+```bash
+just train --top_k 10                                   # só vídeos INES
+just train --top_k 10 --dir_meus data/meus_features     # INES + vídeos próprios
+```
+
+Salva `models/saved_weights/{timestamp}_modelo.pth` + `{timestamp}_classes.json`. Early stopping pela loss de validação.
+
+### 7. Avaliar no hold-out
+
+```bash
+just avaliar --pesos models/saved_weights/XXX_modelo.pth        # hold-out próprio
+just avaliar --pesos models/saved_weights/XXX_modelo.pth --raw  # vídeos INES
+```
+
+Relatório por take (top-3 predições), por palavra e acurácia total.
+
+### 8. Testar ao vivo pela webcam
+
+```bash
+just camera --pesos models/saved_weights/XXX_modelo.pth
+```
+
+Mostra o sinal reconhecido, a confiança, o vídeo de referência da palavra e rejeita entradas fora do vocabulário (detector OOD por KNN, cacheado em disco). `--sem_ood` desativa a rejeição; `--confianca` ajusta o limiar.
 
 ---
 

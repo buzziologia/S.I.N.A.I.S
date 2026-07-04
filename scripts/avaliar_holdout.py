@@ -26,8 +26,9 @@ import torch
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 sys.path.insert(0, os.path.dirname(__file__))
 from models.lstm_classifier import LIBRASClassifier
-from train import (paddar_ou_truncar, normalizar_landmarks, recortar_atividade,
-                   _construir_mapa_classes, INPUT_DIM)
+from models.preprocess import (preparar_sequencia, colapsar_variante, parse_bases,
+                               unificar_rotulos, INPUT_DIM)
+from train import _construir_mapa_classes
 
 
 def coletar_amostras_holdout(dir_holdout: str, classes: list) -> list:
@@ -77,6 +78,10 @@ def main():
                         help="Pasta dos .npy originais do INES (com --raw)")
     parser.add_argument("--dir_videos", default="data/raw_videos",
                         help="Pasta dos vídeos originais, p/ mapear classes (com --raw)")
+    parser.add_argument("--unificar", default="QUE",
+                        help="Palavras cujas variantes numeradas são unificadas na "
+                             "classificação (somando probabilidades). Separadas por "
+                             "vírgula; '' desativa. Padrão: QUE")
     args = parser.parse_args()
 
     caminho_classes = args.pesos.replace("_modelo.pth", "_classes.json")
@@ -95,31 +100,41 @@ def main():
         amostras = coletar_amostras_holdout(args.dir_holdout, classes)
         fonte = args.dir_holdout
 
+    # Fusão de variantes na CLASSIFICAÇÃO: o modelo continua prevendo QUE1/QUE2,
+    # mas as probabilidades são somadas e o acerto é medido pela palavra-base.
+    bases = parse_bases(args.unificar)
+    rotulos, mapa_idx = unificar_rotulos(classes, bases)
+    if len(rotulos) < len(classes):
+        print(f"[INFO] Variantes unificadas na classificação ({args.unificar}): "
+              f"{len(classes)} classes → {len(rotulos)} rótulos.")
+
     acertos, total = 0, 0
-    por_classe = defaultdict(lambda: [0, 0])   # palavra -> [acertos, total]
+    por_classe = defaultdict(lambda: [0, 0])   # rótulo -> [acertos, total]
     linhas = []                                 # relatório por arquivo
 
     for palavra, caminho in amostras:
-        t = np.load(caminho).astype(np.float32)
-        t = normalizar_landmarks(paddar_ou_truncar(recortar_atividade(t)))
+        t = preparar_sequencia(np.load(caminho))
         with torch.no_grad():
             logits = modelo(torch.from_numpy(t).unsqueeze(0).to(device))
-            probs = logits.softmax(1)[0]
+            probs = logits.softmax(1)[0].cpu().numpy()
 
-        top3 = probs.topk(min(3, len(classes)))
-        pred = classes[top3.indices[0].item()]
-        ok = pred == palavra
+        probs_u = np.zeros(len(rotulos))
+        np.add.at(probs_u, mapa_idx, probs)
+        ordem = probs_u.argsort()[::-1][:3]
+
+        verdade = colapsar_variante(palavra, bases)
+        pred = rotulos[ordem[0]]
+        ok = pred == verdade
 
         total += 1
-        por_classe[palavra][1] += 1
+        por_classe[verdade][1] += 1
         if ok:
             acertos += 1
-            por_classe[palavra][0] += 1
+            por_classe[verdade][0] += 1
 
         arq = os.path.basename(caminho)
-        desc_top3 = "  ".join(f"{classes[i]}({p * 100:.0f}%)"
-                              for i, p in zip(top3.indices.tolist(), top3.values.tolist()))
-        linhas.append(f"  {'✓' if ok else '✗'} {palavra:<8} {arq:<22} → {desc_top3}")
+        desc_top3 = "  ".join(f"{rotulos[i]}({probs_u[i] * 100:.0f}%)" for i in ordem)
+        linhas.append(f"  {'✓' if ok else '✗'} {verdade:<8} {arq:<22} → {desc_top3}")
 
     print(f"\nModelo: {args.pesos}  ({len(classes)} classes)")
     print(f"Avaliado em: {fonte}\n")
@@ -137,7 +152,7 @@ def main():
 
     rotulo = "ACURÁCIA RAW (INES, visto no treino)" if args.raw else "ACURÁCIA HOLD-OUT"
     print(f"\n{rotulo}: {acertos}/{total} = {acertos / total * 100:.1f}%  "
-          f"(acaso: {100 / len(classes):.1f}%)")
+          f"(acaso: {100 / len(rotulos):.1f}%)")
 
 
 if __name__ == "__main__":

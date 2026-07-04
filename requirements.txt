@@ -1,24 +1,20 @@
 # Dependências do Projeto S.I.N.A.I.S
+# Requer Python 3.11 (mediapipe >= 0.10.30 removeu a API solutions.hands)
 
 # ── Webcam & Visão Computacional ──────────────────────────────────────────────
-streamlit
+streamlit               # Dashboard (app.py)
 opencv-python>=4.8.0,<4.10.0  # Compatível com numpy < 2.0 requerido pelo MediaPipe
-mediapipe==0.10.21      # Versão estável com solutions.hands e pré-compilada para Python 3.12 (evita AttributeError e erros de free no Windows)
-protobuf>=4.25.3        # Compatibilidade com MediaPipe no Python 3.12
+mediapipe==0.10.21      # Última versão estável com solutions.hands
+protobuf>=4.25.3        # Compatibilidade com MediaPipe
 
 # ── Processamento de Dados e Matrizes ─────────────────────────────────────────
 numpy
-pandas
+tqdm                    # Barra de progresso (augmentar_offline.py)
 
 # ── Machine Learning (Deep Learning Temporal) ─────────────────────────────────
 # Nota: Para baixar a versão leve (CPU) do torch (~150MB em vez de 2GB+), rode antes:
-# pip install torch torchvision --extra-index-url https://download.pytorch.org/whl/cpu
+# pip install torch --extra-index-url https://download.pytorch.org/whl/cpu
 torch
-torchvision
 
-# ── Síntese de Voz ────────────────────────────────────────────────────────────
-gTTS                    # Online (Google TTS)
-pyttsx3                 # Offline (nativo do SO)
-
-# ── Scripts de Coleta do Dicionário INES ──────────────────────────────────────
+# ── Coleta do Dicionário INES ─────────────────────────────────────────────────
 requests                # HTTP para download dos vídeos do INES

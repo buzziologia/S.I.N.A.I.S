@@ -49,17 +49,10 @@ coletar *args:
 download:
     & "{{python}}" scripts/utils/download_ines_videos.py
 
-# Diagnóstico do pipeline (4 testes)
-debug:
-    & "{{python}}" scripts/utils/debug_treino.py
-
 # Ranqueia as palavras por frequência de uso (gera data/palavras_por_frequencia.csv)
 ranquear:
     & "{{python}}" scripts/utils/ranquear_palavras.py
 
-# Experimentos
-exp-grupos:
-    & "{{python}}" scripts/experiments/experimento_grupos.py
-
-exp-config:
-    & "{{python}}" scripts/experiments/experimento_config_mao.py
+# 6) Avalia um modelo no hold-out de vídeos próprios (ou --raw p/ vídeos INES)
+avaliar *args:
+    & "{{python}}" scripts/avaliar_holdout.py {{args}}

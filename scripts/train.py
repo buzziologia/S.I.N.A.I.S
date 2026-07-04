@@ -27,142 +27,10 @@ from torch.utils.data import Dataset, DataLoader, random_split
 # Permite importar de models/ a partir da raiz do projeto
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 from models.lstm_classifier import LIBRASClassifier
-
-# Comprimento fixo de sequência (frames). Vídeos menores são preenchidos com
-# zeros; vídeos maiores são truncados no início (mantém os frames finais do sinal)
-MAX_SEQ_LEN = 30
-DIM_MAO     = 63                 # 21 landmarks × XYZ (1 mão)
-NUM_MAOS    = 2                  # sinais bimanuais → 2 mãos
-INPUT_DIM   = DIM_MAO * NUM_MAOS # 126
-
-# ──────────────────────────────────────────────────────────────────────────────
-# Helpers
-# ──────────────────────────────────────────────────────────────────────────────
-
-def paddar_ou_truncar(tensor: np.ndarray, comprimento: int = MAX_SEQ_LEN) -> np.ndarray:
-    """
-    Recebe tensor (N, 126) e retorna (comprimento, 126).
-    - N > comprimento → mantém os últimos `comprimento` frames
-    - N < comprimento → adiciona zeros no início (pre-padding)
-    - N == comprimento → retorna sem alteração
-    """
-    n = len(tensor)
-    if n == comprimento:
-        return tensor
-    if n > comprimento:
-        return tensor[-comprimento:]
-    pad = np.zeros((comprimento - n, tensor.shape[1]), dtype=np.float32)
-    return np.vstack([pad, tensor])
-
-
-def recortar_atividade(tensor: np.ndarray, margem: int = 2) -> np.ndarray:
-    """
-    Corta a sequência para a janela onde alguma mão foi detectada (± margem).
-    Vídeos coletados pela webcam têm o sinal no MEIO do take (contagem antes,
-    braço abaixando depois) — sem este recorte, manter os últimos 30 frames
-    pode descartar o sinal inteiro e entregar um tensor todo de zeros.
-    Nos vídeos INES o sinal ocupa o clipe quase todo, então o recorte é neutro.
-    """
-    mao = ~np.all(tensor == 0, axis=1)
-    idx = np.where(mao)[0]
-    if len(idx) == 0:
-        return tensor
-    ini = max(0, idx[0] - margem)
-    fim = min(len(tensor), idx[-1] + margem + 1)
-    return tensor[ini:fim]
-
-
-def normalizar_landmarks(tensor: np.ndarray) -> np.ndarray:
-    """
-    Normaliza os landmarks de cada frame para remover variação de posição e escala.
-    Cada mão é normalizada de forma independente (relativa ao seu próprio pulso):
-    - Translada ao pulso (landmark 0 = coords [0,1,2] do bloco da mão)
-    - Escala pela distância máxima de qualquer ponto ao pulso
-    Mãos ausentes (bloco de 63 zeros) são mantidas como zeros.
-    """
-    out = tensor.copy()
-    for i, frame in enumerate(out):
-        for h in range(NUM_MAOS):
-            ini, fim = h * DIM_MAO, (h + 1) * DIM_MAO
-            pts = frame[ini:fim].reshape(21, 3)
-            # Pula mãos ausentes
-            if np.all(pts == 0):
-                continue
-            # Translada ao pulso
-            pts = pts - pts[0]
-            # Escala normalizada
-            escala = np.max(np.linalg.norm(pts, axis=1)) + 1e-6
-            pts = pts / escala
-            out[i, ini:fim] = pts.flatten()
-    return out
-
-
-def _mascara_maos(t: np.ndarray) -> np.ndarray:
-    """Retorna máscara (T, NUM_MAOS) booleana: True onde a mão existe (bloco não-nulo)."""
-    m = np.zeros((len(t), NUM_MAOS), dtype=bool)
-    for h in range(NUM_MAOS):
-        bloco = t[:, h * DIM_MAO:(h + 1) * DIM_MAO]
-        m[:, h] = ~np.all(bloco == 0, axis=1)
-    return m
-
-
-def aumentar(tensor: np.ndarray, treino: bool = True) -> np.ndarray:
-    """
-    Augmentation pesada para compensar poucas amostras por palavra.
-    Aplica múltiplas transformações aleatórias independentes a cada epoch,
-    criando uma versão diferente do mesmo sinal a cada passagem.
-
-    Mãos ausentes (blocos de 63 zeros) são re-zeradas ao final para que o
-    ruído/escala não transforme "sem mão" numa mão espúria de escala cheia.
-    """
-    if not treino:
-        return tensor
-    t = tensor.copy()
-    # Quais mãos existem em cada frame (antes de qualquer ruído).
-    # A máscara acompanha os mesmos reordenamentos temporais aplicados a `t`.
-    mask = _mascara_maos(t)
-
-    # Ruído gaussiano nos landmarks (simula imprecisão do MediaPipe)
-    t += np.random.normal(0, 0.02, t.shape).astype(np.float32)
-
-    # Escala aleatória ±20% (mão mais perto/longe da câmera)
-    t *= np.random.uniform(0.80, 1.20)
-
-    # Deslocamento espacial XY em todos os frames (simula posição diferente na tela)
-    deslocamento = np.random.uniform(-0.05, 0.05, (1, INPUT_DIM)).astype(np.float32)
-    t += deslocamento
-
-    # Velocidade aleatória: reamostrar a sequência com velocidade ±30%
-    n = len(t)
-    fator = np.random.uniform(0.70, 1.30)
-    n_novo = int(np.clip(n * fator, 5, n * 2))
-    indices = np.round(np.linspace(0, n - 1, n_novo)).astype(int)
-    t    = paddar_ou_truncar(t[indices])               # reajusta para MAX_SEQ_LEN
-    mask = paddar_ou_truncar(mask[indices].astype(np.float32)) > 0.5
-
-    # Espelhamento horizontal com 50% de chance: inverte X de cada mão E troca os
-    # slots Left/Right (um espelho real troca a mão esquerda pela direita).
-    if np.random.rand() < 0.5:
-        for i in range(len(t)):
-            m0 = t[i, 0:DIM_MAO].reshape(21, 3)
-            m1 = t[i, DIM_MAO:INPUT_DIM].reshape(21, 3)
-            m0[:, 0] = -m0[:, 0]
-            m1[:, 0] = -m1[:, 0]
-            t[i, 0:DIM_MAO]         = m1.flatten()
-            t[i, DIM_MAO:INPUT_DIM] = m0.flatten()
-        mask = mask[:, ::-1].copy()
-
-    # Deslocamento temporal ±4 frames
-    shift = np.random.randint(-4, 5)
-    if shift != 0:
-        t    = np.roll(t, shift, axis=0)
-        mask = np.roll(mask, shift, axis=0)
-
-    # Re-zera as mãos que eram ausentes (preserva a semântica "sem mão")
-    for h in range(NUM_MAOS):
-        t[~mask[:, h], h * DIM_MAO:(h + 1) * DIM_MAO] = 0.0
-
-    return t
+# Pré-processamento compartilhado com avaliar_holdout.py e testar_camera.py —
+# toda transformação de sequência vive em models/preprocess.py (fonte única).
+from models.preprocess import (MAX_SEQ_LEN, INPUT_DIM, paddar_ou_truncar,
+                               recortar_atividade, normalizar_landmarks, aumentar)
 
 
 # ──────────────────────────────────────────────────────────────────────────────
@@ -226,6 +94,10 @@ class LibrasDataset(Dataset):
                  dir_meus: str = None):
         self.amostras = []   # [(caminho_npy, label_idx)]
         self.treino   = treino
+        # Cache do tensor já recortado+paddado+normalizado por caminho: evita
+        # reler o .npy do disco e re-normalizar a cada época (a augmentation,
+        # que é aleatória, roda sempre sobre uma cópia). Custo: ~15 KB/amostra.
+        self._cache   = {}
 
         mapa_stem_classe = _construir_mapa_classes(dir_videos, assunto=assunto)
 
@@ -308,12 +180,20 @@ class LibrasDataset(Dataset):
     def __len__(self):
         return len(self.amostras)
 
+    def _carregar_preparado(self, caminho: str) -> np.ndarray:
+        """Tensor (MAX_SEQ_LEN, 126) recortado, paddado e normalizado (com cache)."""
+        tensor = self._cache.get(caminho)
+        if tensor is None:
+            tensor = np.load(caminho).astype(np.float32)  # (N_frames, 126)
+            tensor = recortar_atividade(tensor)            # janela com mão detectada
+            tensor = paddar_ou_truncar(tensor)             # (MAX_SEQ_LEN, 126)
+            tensor = normalizar_landmarks(tensor)          # remove variação posição/escala
+            self._cache[caminho] = tensor
+        return tensor
+
     def __getitem__(self, idx):
         caminho, label = self.amostras[idx]
-        tensor = np.load(caminho).astype(np.float32)  # (N_frames, 126)
-        tensor = recortar_atividade(tensor)            # janela com mão detectada
-        tensor = paddar_ou_truncar(tensor)             # (MAX_SEQ_LEN, 126)
-        tensor = normalizar_landmarks(tensor)          # remove variação posição/escala
+        tensor = self._carregar_preparado(caminho)
         tensor = aumentar(tensor, treino=self.treino)  # augmentation só no treino
         return torch.from_numpy(tensor), label
 
@@ -417,10 +297,7 @@ def treinar(args):
             self.treino = treino
         def __getitem__(self, idx):
             caminho, label = self.dataset.amostras[self.indices[idx]]
-            tensor = np.load(caminho).astype(np.float32)
-            tensor = recortar_atividade(tensor)
-            tensor = paddar_ou_truncar(tensor)
-            tensor = normalizar_landmarks(tensor)
+            tensor = self.dataset._carregar_preparado(caminho)
             tensor = aumentar(tensor, treino=self.treino)
             return torch.from_numpy(tensor), label
 

@@ -21,57 +21,23 @@ import torch
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 sys.path.insert(0, os.path.dirname(__file__))
 from models.lstm_classifier import LIBRASClassifier
-import train  # reusa o pré-processamento idêntico ao treino p/ montar o banco OOD
-
-# ──────────────────────────────────────────────────────────────────────────────
-# Configurações
-# ──────────────────────────────────────────────────────────────────────────────
-MAX_SEQ_LEN = 30                  # deve ser igual ao usado no treino
-DIM_MAO     = 63                  # 21 landmarks × XYZ (1 mão)
-NUM_MAOS    = 2                   # sinais bimanuais → 2 mãos
-INPUT_DIM   = DIM_MAO * NUM_MAOS  # 126
+# Pré-processamento IDÊNTICO ao do treino (fonte única em models/preprocess.py):
+# recorta a janela de atividade da mão, padda/trunca para MAX_SEQ_LEN e normaliza.
+from models.preprocess import (MAX_SEQ_LEN, DIM_MAO, INPUT_DIM, preparar_sequencia,
+                               colapsar_variante, parse_bases, unificar_rotulos)
+import train  # p/ mapear classes (stem → palavra) ao montar o banco OOD
 
 mp_hands    = mp.solutions.hands
 mp_draw     = mp.solutions.drawing_utils
 
 
-# ──────────────────────────────────────────────────────────────────────────────
-# Helpers (mesma lógica do train.py)
-# ──────────────────────────────────────────────────────────────────────────────
-
-def normalizar_landmarks(frame: np.ndarray) -> np.ndarray:
-    """
-    Normaliza 1 frame (126,): cada mão é normalizada de forma independente
-    (translada ao próprio pulso e escala pelo alcance máximo).
-    Mãos ausentes (bloco de 63 zeros) permanecem zeradas.
-    """
-    out = frame.copy()
-    for h in range(NUM_MAOS):
-        ini, fim = h * DIM_MAO, (h + 1) * DIM_MAO
-        pts = out[ini:fim].reshape(21, 3)
-        if np.all(pts == 0):
-            continue
-        pts = pts - pts[0]
-        escala = np.max(np.linalg.norm(pts, axis=1)) + 1e-6
-        out[ini:fim] = (pts / escala).flatten()
-    return out
-
-
-def paddar_sequencia(buffer: list) -> np.ndarray:
-    """Converte o buffer de frames em tensor (MAX_SEQ_LEN, 126) com padding."""
-    arr = np.array(buffer, dtype=np.float32)
-    n   = len(arr)
-    if n >= MAX_SEQ_LEN:
-        return arr[-MAX_SEQ_LEN:]
-    pad = np.zeros((MAX_SEQ_LEN - n, INPUT_DIM), dtype=np.float32)
-    return np.vstack([pad, arr])
-
-
 def extrair_landmarks(results) -> np.ndarray:
     """
-    Extrai vetor (126,) das duas mãos de um frame processado pelo MediaPipe.
+    Extrai vetor CRU (126,) das duas mãos de um frame processado pelo MediaPipe.
     A mão 'Left' ocupa o bloco 0:63 e a 'Right' o bloco 63:126 — mesma regra do
     extract_features.py. Mão ausente → bloco de zeros.
+    A normalização acontece depois, na janela inteira (preparar_sequencia),
+    exatamente como no treino.
     """
     vetor = np.zeros(INPUT_DIM, dtype=np.float32)
     if results.multi_hand_landmarks and results.multi_handedness:
@@ -82,7 +48,7 @@ def extrair_landmarks(results) -> np.ndarray:
             for lm in mao_lm.landmark:
                 pts.extend([lm.x, lm.y, lm.z])
             vetor[base:base + DIM_MAO] = np.array(pts, dtype=np.float32)
-    return normalizar_landmarks(vetor)
+    return vetor
 
 
 # ──────────────────────────────────────────────────────────────────────────────
@@ -131,13 +97,26 @@ def extrair_feature(modelo, x):
     return logits[0], feat[0]
 
 
-def construir_banco_ood(modelo, classes, device, dir_features='data/processed_features',
+def construir_banco_ood(modelo, classes, device, caminho_pesos,
+                        dir_features='data/processed_features',
                         dir_videos='data/raw_videos', k=5, percentil=95):
     """
     Monta um banco de features das amostras de TREINO das classes do modelo e
     calibra um limiar de distância KNN (percentil) para rejeitar entradas OOD.
-    Retorna dict {banco, k, limiar} ou None se não der pra calibrar.
+    O banco é cacheado em disco ao lado dos pesos (*_ood_kK_pP.npz) — montar do
+    zero exige uma passada do modelo por TODAS as amostras, o que é lento em
+    vocabulários grandes. Retorna dict {banco, k, limiar} ou None.
     """
+    cache_path = None
+    if caminho_pesos.endswith('_modelo.pth'):
+        cache_path = caminho_pesos.replace(
+            '_modelo.pth', f'_ood_k{k}_p{int(percentil)}.npz')
+        if os.path.exists(cache_path):
+            dados = np.load(cache_path)
+            print(f"[OOD] banco carregado do cache: {cache_path} "
+                  f"({len(dados['banco'])} features | limiar = {float(dados['limiar']):.3f})")
+            return {'banco': dados['banco'], 'k': k, 'limiar': float(dados['limiar'])}
+
     try:
         mapa = train._construir_mapa_classes(dir_videos)   # {stem: palavra}
     except Exception as e:
@@ -154,8 +133,7 @@ def construir_banco_ood(modelo, classes, device, dir_features='data/processed_fe
             p = os.path.join(dir_features, stem + '.npy')
             if not os.path.exists(p):
                 continue
-            t = train.normalizar_landmarks(train.paddar_ou_truncar(
-                np.load(p).astype(np.float32)))
+            t = preparar_sequencia(np.load(p))
             x = torch.from_numpy(t).unsqueeze(0).to(device)
             _, feat = extrair_feature(modelo, x)
             feats.append(feat.cpu().numpy())
@@ -173,6 +151,10 @@ def construir_banco_ood(modelo, classes, device, dir_features='data/processed_fe
     D.sort(axis=1)
     limiar = float(np.percentile(D[:, k - 1], percentil))
     print(f"[OOD] banco com {len(banco)} features | limiar KNN (k={k}, p{percentil}) = {limiar:.3f}")
+
+    if cache_path:
+        np.savez(cache_path, banco=banco, limiar=limiar)
+        print(f"[OOD] banco salvo em cache: {cache_path}")
     return {'banco': banco, 'k': k, 'limiar': limiar}
 
 
@@ -184,9 +166,12 @@ def score_ood(feat, ood):
     return float(d[min(ood['k'], len(d)) - 1])
 
 
-def mapear_videos(classes, dir_videos='data/raw_videos'):
-    """Retorna {palavra: caminho_do_mp4} para as palavras do modelo (1º vídeo achado)."""
-    alvo = set(classes)
+def mapear_videos(rotulos, bases, dir_videos='data/raw_videos'):
+    """
+    Retorna {rótulo_exibido: caminho_do_mp4} (1º vídeo achado). As pastas de
+    variantes (QUE1/QUE2) atendem pelo rótulo unificado ('QUE').
+    """
+    alvo = set(rotulos)
     mapa = {}
     if not os.path.isdir(dir_videos):
         return mapa
@@ -195,14 +180,15 @@ def mapear_videos(classes, dir_videos='data/raw_videos'):
         if not os.path.isdir(pasta_a):
             continue
         for palavra in os.listdir(pasta_a):
-            if palavra not in alvo or palavra in mapa:
+            rotulo = colapsar_variante(palavra, bases)
+            if rotulo not in alvo or rotulo in mapa:
                 continue
             pasta_p = os.path.join(pasta_a, palavra)
             if not os.path.isdir(pasta_p):
                 continue
             mp4s = [f for f in os.listdir(pasta_p) if f.lower().endswith('.mp4')]
             if mp4s:
-                mapa[palavra] = os.path.join(pasta_p, mp4s[0])
+                mapa[rotulo] = os.path.join(pasta_p, mp4s[0])
     return mapa
 
 
@@ -277,10 +263,18 @@ def main(args):
     modelo.eval()
     print(f"Modelo carregado — {num_classes} classes | hidden={hidden_dim} | dispositivo: {device}")
 
+    # Fusão de variantes na CLASSIFICAÇÃO: o modelo continua prevendo QUE1/QUE2,
+    # mas as probabilidades são somadas e o rótulo exibido é a palavra-base.
+    bases = parse_bases(args.unificar)
+    rotulos, mapa_idx = unificar_rotulos(classes, bases)
+    if len(rotulos) < len(classes):
+        print(f"[INFO] Variantes unificadas na exibição ({args.unificar}): "
+              f"{len(classes)} classes → {len(rotulos)} rótulos.")
+
     # ── Banco de OOD (rejeita sinais fora do vocabulário treinado) ─────────────
     ood = None
     if not args.sem_ood:
-        ood = construir_banco_ood(modelo, classes, device,
+        ood = construir_banco_ood(modelo, classes, device, args.pesos,
                                   k=args.k_ood, percentil=args.ood_percentil)
         if ood is None:
             print("[OOD] desativado (sem banco). Mostrando todas as predições.")
@@ -306,7 +300,7 @@ def main(args):
     historico_pred = collections.deque(maxlen=8)
 
     # Vídeo de referência da palavra identificada (canto inferior direito).
-    palavra_para_video = mapear_videos(classes)
+    palavra_para_video = mapear_videos(rotulos, bases)
     print(f"[VÍDEO] {len(palavra_para_video)} palavras com vídeo de referência.")
     video_cap  = None   # VideoCapture do vídeo tocando agora (None = nenhum)
     video_word = None   # palavra do vídeo tocando
@@ -338,17 +332,24 @@ def main(args):
 
         # ── Inferência (só quando o buffer está cheio) ────────────────────────
         if len(buffer_frames) == MAX_SEQ_LEN:
-            # Gate 1: presença de mão (fração de frames do buffer com mão detectada)
-            frac_maos = float(np.mean([np.any(f != 0) for f in buffer_frames]))
+            arr = np.array(buffer_frames, dtype=np.float32)   # (30, 126) cru
 
-            tensor = paddar_sequencia(list(buffer_frames))
+            # Gate 1: presença de mão (fração de frames do buffer com mão detectada)
+            frac_maos = float(np.mean(np.any(arr != 0, axis=1)))
+
+            # Mesmo pipeline do treino: recorta a janela com mão, padda e normaliza
+            tensor = preparar_sequencia(arr)
             x      = torch.from_numpy(tensor).unsqueeze(0).to(device)  # (1, 30, 126)
 
             with torch.no_grad():
                 logits, feat = extrair_feature(modelo, x)
-                probs = torch.softmax(logits, dim=0)
-                idx   = probs.argmax().item()
-                conf  = probs[idx].item()
+                probs = torch.softmax(logits, dim=0).cpu().numpy()
+
+            # Soma as probabilidades das variantes unificadas (QUE1+QUE2 → QUE)
+            probs_u = np.zeros(len(rotulos))
+            np.add.at(probs_u, mapa_idx, probs)
+            idx  = int(probs_u.argmax())
+            conf = float(probs_u[idx])
 
             # Gate 2: OOD por KNN (entrada longe das amostras de treino)
             eh_ood = False
@@ -370,7 +371,7 @@ def main(args):
                 # Predição mais frequente no histórico (suavização)
                 if historico_pred:
                     pred_suave      = max(set(historico_pred), key=historico_pred.count)
-                    sinal_atual     = classes[pred_suave]
+                    sinal_atual     = rotulos[pred_suave]
                     confianca_atual = conf
 
         # ── Interface visual ──────────────────────────────────────────────────
@@ -455,6 +456,11 @@ if __name__ == '__main__':
                              'Menor = mais rígido (rejeita mais). Padrão: 95')
     parser.add_argument('--k_ood', type=int, default=5,
                         help='k do KNN usado na detecção de OOD. Padrão: 5')
-    parser.add_argument('--min_maos', type=float, default=0.5,
-                        help='Fração mínima de frames com mão no buffer p/ tentar prever. Padrão: 0.5')
+    parser.add_argument('--min_maos', type=float, default=0.3,
+                        help='Fração mínima de frames com mão no buffer p/ tentar prever. '
+                             'Padrão: 0.3 (sinais rápidos têm mão em ~15 dos 30 frames)')
+    parser.add_argument('--unificar', default='QUE',
+                        help='Palavras cujas variantes numeradas (QUE1/QUE2) são unificadas '
+                             'na exibição, somando probabilidades. Separadas por vírgula; '
+                             "'' desativa. Padrão: QUE")
     main(parser.parse_args())

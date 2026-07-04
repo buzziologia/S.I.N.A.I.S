@@ -9,11 +9,9 @@ class LIBRASClassifier(nn.Module):
     Entrada : (batch, seq, 126)  — sequência temporal de landmarks das 2 mãos
     Saída   : (batch, num_classes) — logits por classe
 
-    Melhorias em relação à versão anterior:
-    - hidden_dim maior (256 vs 128)
-    - Usa média de todos os frames temporais (global average pooling)
-      em vez de só o último frame — captura melhor o movimento completo
-    - Camada intermediária maior (128 vs 64)
+    Arquitetura: LSTM bidirecional (2 camadas, hidden=256) → estado do último
+    frame temporal (correto com pre-padding: zeros no início, sinal no fim) →
+    classificador com gargalo intermediário de 256 unidades.
     """
 
     def __init__(self, input_dim: int = 126, hidden_dim: int = 256,

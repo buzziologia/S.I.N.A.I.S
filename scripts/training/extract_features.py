@@ -7,9 +7,17 @@ from datetime import datetime
 
 # Configurações do MediaPipe para VÍDEOS
 mp_hands = mp.solutions.hands
-# static_image_mode=False diz ao MediaPipe para rastrear o movimento.
-# max_num_hands=2 → captura as duas mãos (muitos sinais de Libras são bimanuais).
-hands = mp_hands.Hands(static_image_mode=False, max_num_hands=2, min_detection_confidence=0.5)
+
+
+def criar_hands():
+    """
+    Cria um rastreador de mãos novo. Um por vídeo: static_image_mode=False
+    mantém estado de rastreamento entre frames, e reusar o mesmo objeto entre
+    vídeos diferentes 'vaza' o rastreio do vídeo anterior para o seguinte.
+    max_num_hands=2 → captura as duas mãos (muitos sinais de Libras são bimanuais).
+    """
+    return mp_hands.Hands(static_image_mode=False, max_num_hands=2,
+                          min_detection_confidence=0.5)
 
 # Cada frame vira um vetor de 126 = 2 mãos × 21 landmarks × XYZ.
 #   Slot 0 (índices  0:63 ) = mão rotulada "Left"  pelo MediaPipe
@@ -76,13 +84,14 @@ def extrair_videos_para_npy():
             continue
 
         cap = cv2.VideoCapture(caminho_video)
+        hands = criar_hands()   # rastreador novo por vídeo (sem estado do anterior)
         frames_do_sinal = [] # Lista que vai guardar a matriz temporal do vídeo
-        
+
         while cap.isOpened():
             sucesso, frame = cap.read()
             if not sucesso:
                 break # O vídeo acabou
-                
+
             # Espelha o frame (igual ao testar_camera.py) para que os rótulos
             # "Left"/"Right" do MediaPipe sejam consistentes entre o treino e a
             # inferência na webcam, que também é espelhada.
@@ -92,8 +101,9 @@ def extrair_videos_para_npy():
 
             # 1 vetor (126,) por frame: as duas mãos lado a lado
             frames_do_sinal.append(frame_para_vetor(results))
-            
+
         cap.release()
+        hands.close()
         
         # Converte tudo para uma Matriz NumPy e salva
         matriz_final = np.array(frames_do_sinal)
