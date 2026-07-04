@@ -43,6 +43,16 @@ FONT = cv2.FONT_HERSHEY_SIMPLEX
 ALTURA_PAINEL = 190   # altura (px) do painel preto acima da câmera
 LARG_LISTA    = 190   # largura (px) da coluna lateral com a lista de palavras
 
+
+def tem_display():
+    return bool(os.environ.get('DISPLAY') or os.environ.get('WAYLAND_DISPLAY'))
+
+
+def mostrar_frame(janela, frame):
+    if not tem_display():
+        return
+    cv2.imshow(janela, frame)
+
 # Conjunto padrão (palavras comuns e distintas, presentes no top-100/300)
 PALAVRAS_PADRAO = ['OI', 'OBRIGADO1', 'POR_FAVOR', 'EU', 'VOCE', 'CASA',
                    'AMOR', 'AGUA', 'AMIGO', 'SIM']
@@ -234,7 +244,7 @@ def render(janela, cam, linhas, config_img, ref, velocidade, lista=None):
         base = np.hstack([montar_lista(LARG_LISTA, cam.shape[0], palavras, estado, idx), cam])
     ref_frame = ref.tick(velocidade) if ref is not None else None
     painel = montar_painel(base.shape[1], linhas, config_img, ref_frame, velocidade)
-    cv2.imshow(janela, np.vstack([painel, base]))
+    mostrar_frame(janela, np.vstack([painel, base]))
 
 
 def main(args):
@@ -266,6 +276,11 @@ def main(args):
     os.makedirs(args.dir_features, exist_ok=True)
 
     janela = "S.I.N.A.I.S — Coleta de vídeos"
+    if tem_display():
+        cv2.namedWindow(janela, cv2.WINDOW_NORMAL)
+        cv2.moveWindow(janela, 0, 0)
+    else:
+        print("[aviso] sem display detectado; o preview da câmera será desativado.")
     sair = False
     total_gravados = 0
     velocidade = args.ref_velocidade   # velocidade do vídeo de referência (tecla V cicla)
