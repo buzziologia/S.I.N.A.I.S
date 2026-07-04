@@ -55,6 +55,23 @@ def paddar_ou_truncar(tensor: np.ndarray, comprimento: int = MAX_SEQ_LEN) -> np.
     return np.vstack([pad, tensor])
 
 
+def recortar_atividade(tensor: np.ndarray, margem: int = 2) -> np.ndarray:
+    """
+    Corta a sequência para a janela onde alguma mão foi detectada (± margem).
+    Vídeos coletados pela webcam têm o sinal no MEIO do take (contagem antes,
+    braço abaixando depois) — sem este recorte, manter os últimos 30 frames
+    pode descartar o sinal inteiro e entregar um tensor todo de zeros.
+    Nos vídeos INES o sinal ocupa o clipe quase todo, então o recorte é neutro.
+    """
+    mao = ~np.all(tensor == 0, axis=1)
+    idx = np.where(mao)[0]
+    if len(idx) == 0:
+        return tensor
+    ini = max(0, idx[0] - margem)
+    fim = min(len(tensor), idx[-1] + margem + 1)
+    return tensor[ini:fim]
+
+
 def normalizar_landmarks(tensor: np.ndarray) -> np.ndarray:
     """
     Normaliza os landmarks de cada frame para remover variação de posição e escala.
@@ -205,7 +222,8 @@ class LibrasDataset(Dataset):
     def __init__(self, dir_features: str, dir_videos: str = 'data/raw_videos',
                  treino: bool = True, excluir_nenhum: bool = False,
                  assunto: str = None, top_k: int = None,
-                 freq_csv: str = 'data/palavras_por_frequencia.csv'):
+                 freq_csv: str = 'data/palavras_por_frequencia.csv',
+                 dir_meus: str = None):
         self.amostras = []   # [(caminho_npy, label_idx)]
         self.treino   = treino
 
@@ -265,12 +283,35 @@ class LibrasDataset(Dataset):
         if sem_classe:
             print(f"[AVISO] {sem_classe} arquivo(s) sem classe ignorados.")
 
+        # ── Vídeos próprios (data/meus_features/PALAVRA/*.npy) ────────────────
+        # A classe vem do nome da pasta; palavras fora do vocabulário atual
+        # (ex: cortadas pelo filtro top_k) são ignoradas.
+        if dir_meus:
+            adicionados, fora_vocab = 0, set()
+            for palavra in os.listdir(dir_meus):
+                pasta = os.path.join(dir_meus, palavra)
+                if not os.path.isdir(pasta):
+                    continue
+                idx = self.class_to_idx.get(palavra)
+                if idx is None:
+                    fora_vocab.add(palavra)
+                    continue
+                for arq in os.listdir(pasta):
+                    if arq.endswith('.npy'):
+                        self.amostras.append((os.path.join(pasta, arq), idx))
+                        adicionados += 1
+            print(f"[INFO] Vídeos próprios: {adicionados} amostras de '{dir_meus}'.")
+            if fora_vocab:
+                print(f"[AVISO] Palavras próprias fora do vocabulário ignoradas: "
+                      f"{', '.join(sorted(fora_vocab))}")
+
     def __len__(self):
         return len(self.amostras)
 
     def __getitem__(self, idx):
         caminho, label = self.amostras[idx]
         tensor = np.load(caminho).astype(np.float32)  # (N_frames, 126)
+        tensor = recortar_atividade(tensor)            # janela com mão detectada
         tensor = paddar_ou_truncar(tensor)             # (MAX_SEQ_LEN, 126)
         tensor = normalizar_landmarks(tensor)          # remove variação posição/escala
         tensor = aumentar(tensor, treino=self.treino)  # augmentation só no treino
@@ -351,7 +392,7 @@ def treinar(args):
     dataset = LibrasDataset(args.dir_features, args.dir_videos, treino=False,
                             excluir_nenhum=args.excluir_nenhum,
                             assunto=args.assunto, top_k=args.top_k,
-                            freq_csv=args.freq_csv)
+                            freq_csv=args.freq_csv, dir_meus=args.dir_meus)
     if len(dataset) == 0:
         print("[ERRO] Nenhuma amostra encontrada. Execute extract_features.py primeiro.")
         sys.exit(1)
@@ -377,6 +418,7 @@ def treinar(args):
         def __getitem__(self, idx):
             caminho, label = self.dataset.amostras[self.indices[idx]]
             tensor = np.load(caminho).astype(np.float32)
+            tensor = recortar_atividade(tensor)
             tensor = paddar_ou_truncar(tensor)
             tensor = normalizar_landmarks(tensor)
             tensor = aumentar(tensor, treino=self.treino)
@@ -582,6 +624,9 @@ if __name__ == "__main__":
                         help="Treinar só nas K palavras mais usadas (lista de frequência PT-BR)")
     parser.add_argument("--freq_csv",       default="data/palavras_por_frequencia.csv",
                         help="CSV de frequência gerado por ranquear_palavras.py")
+    parser.add_argument("--dir_meus",       default=None,
+                        help="Pasta de features de vídeos próprios (PALAVRA/*.npy) "
+                             "para incluir no treino. Ex: data/meus_features")
     args = parser.parse_args()
 
     treinar(args)

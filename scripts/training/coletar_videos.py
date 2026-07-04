@@ -19,6 +19,7 @@ Uso:
     python scripts/training/coletar_videos.py --palavras CASA,AMOR,EU --reps 8
     python scripts/training/coletar_videos.py --lista palavras.txt --reps 7 --holdout 2
     python scripts/training/coletar_videos.py --top_k 300 --reps 8 --holdout 2
+    python scripts/training/coletar_videos.py --top_k 11,20 --reps 8   # ranks 11 a 20
 
 Controles:
     Espera : ESPAÇO grava | V cicla velocidade da referência (1→0.75→0.5) | P pula | Q sai
@@ -57,19 +58,39 @@ def dica_variacao(rep_idx, is_holdout):
     return DICAS_VARIACAO[rep_idx % len(DICAS_VARIACAO)]
 
 
-def _carregar_top_k(caminho_csv, k):
-    """As k palavras mais usadas do CSV de frequência (ranquear_palavras.py)."""
+def _carregar_top_k(caminho_csv, spec):
+    """
+    Palavras do CSV de frequência (ranquear_palavras.py) por ranking.
+    spec: 'K' → top-K (ranks 1..K)  |  'INI,FIM' → ranks INI..FIM (1-based, inclusivo).
+    Ex: '300' → as 300 mais usadas; '11,20' → da 11ª à 20ª (pula as 10 primeiras).
+    """
     import csv
     if not os.path.exists(caminho_csv):
         print(f"[ERRO] CSV de frequência não encontrado: {caminho_csv}. "
               "Rode scripts/utils/ranquear_palavras.py primeiro.")
         sys.exit(1)
+    partes = [p.strip() for p in str(spec).split(',') if p.strip()]
+    try:
+        if len(partes) == 1:
+            ini, fim = 1, int(partes[0])
+        elif len(partes) == 2:
+            ini, fim = int(partes[0]), int(partes[1])
+        else:
+            raise ValueError
+        if ini < 1 or fim < ini:
+            raise ValueError
+    except ValueError:
+        print(f"[ERRO] --top_k inválido: '{spec}'. Use 'K' (ex: 300) ou 'INI,FIM' (ex: 11,20).")
+        sys.exit(1)
     palavras = []
     with open(caminho_csv, encoding='utf-8') as f:
-        for linha in csv.DictReader(f):
-            palavras.append(linha['palavra'])
-            if len(palavras) >= k:
+        for rank, linha in enumerate(csv.DictReader(f), start=1):
+            if rank < ini:
+                continue
+            if rank > fim:
                 break
+            palavras.append(linha['palavra'])
+    print(f"[TOP_K] ranks {ini}..{fim} → {len(palavras)} palavras")
     return palavras
 
 
@@ -422,8 +443,9 @@ if __name__ == '__main__':
                         help='Lista separada por vírgula (ex: CASA,AMOR,EU)')
     parser.add_argument('--lista', default=None,
                         help='Arquivo .txt com uma palavra por linha')
-    parser.add_argument('--top_k', type=int, default=None,
-                        help='Coletar as K palavras mais usadas (lista de frequência PT-BR)')
+    parser.add_argument('--top_k', default=None,
+                        help="Coletar por ranking de uso: 'K' (ex: 300 = as 300 mais usadas) "
+                             "ou 'INI,FIM' (ex: 11,20 = da 11a a 20a mais usada)")
     parser.add_argument('--freq_csv', default='data/palavras_por_frequencia.csv',
                         help='CSV de frequência gerado por ranquear_palavras.py')
     parser.add_argument('--reps', type=int, default=5, help='Repetições por palavra')

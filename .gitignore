@@ -37,3 +37,7 @@ build/
 .env
 *.secret
 *.local.*
+
+
+*.npy
+*.mp4
