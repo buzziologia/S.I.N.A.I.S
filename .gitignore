@@ -6,13 +6,7 @@ env/
 # ─── Dados Brutos e Processados (vídeos e matrizes .npy pesadas) ──────────────
 data/processed_features/
 
-# ─── Pesos do Modelo Treinado (binários grandes) ──────────────────────────────
-models/saved_weights/*.pth
-models/saved_weights/*.h5
-models/saved_weights/*.pt
-
 # ─── Dados Brutos e Processados (vídeos e matrizes .npy pesadas) ──────────────
-raw_videos/
 augmented_features/
 *.zip
 
@@ -38,7 +32,9 @@ build/
 *.secret
 *.local.*
 
-
-*.npy
-*.npz
-*.mp4
+meus_vini/
+meus_anaclara/
+meus_videos/
+meus_videos_holdout/
+meus_features/
+meus_features_holdout/

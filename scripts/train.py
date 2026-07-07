@@ -155,24 +155,27 @@ class LibrasDataset(Dataset):
         if sem_classe:
             print(f"[AVISO] {sem_classe} arquivo(s) sem classe ignorados.")
 
-        # ── Vídeos próprios (data/meus_features/PALAVRA/*.npy) ────────────────
+        # ── Vídeos próprios (PALAVRA/*.npy; várias pastas separadas por vírgula,
+        # uma por sinalizante) ────────────────────────────────────────────────
         # A classe vem do nome da pasta; palavras fora do vocabulário atual
         # (ex: cortadas pelo filtro top_k) são ignoradas.
         if dir_meus:
-            adicionados, fora_vocab = 0, set()
-            for palavra in os.listdir(dir_meus):
-                pasta = os.path.join(dir_meus, palavra)
-                if not os.path.isdir(pasta):
-                    continue
-                idx = self.class_to_idx.get(palavra)
-                if idx is None:
-                    fora_vocab.add(palavra)
-                    continue
-                for arq in os.listdir(pasta):
-                    if arq.endswith('.npy'):
-                        self.amostras.append((os.path.join(pasta, arq), idx))
-                        adicionados += 1
-            print(f"[INFO] Vídeos próprios: {adicionados} amostras de '{dir_meus}'.")
+            fora_vocab = set()
+            for dir_m in [d.strip() for d in dir_meus.split(',') if d.strip()]:
+                adicionados = 0
+                for palavra in os.listdir(dir_m):
+                    pasta = os.path.join(dir_m, palavra)
+                    if not os.path.isdir(pasta):
+                        continue
+                    idx = self.class_to_idx.get(palavra)
+                    if idx is None:
+                        fora_vocab.add(palavra)
+                        continue
+                    for arq in os.listdir(pasta):
+                        if arq.endswith('.npy'):
+                            self.amostras.append((os.path.join(pasta, arq), idx))
+                            adicionados += 1
+                print(f"[INFO] Vídeos próprios: {adicionados} amostras de '{dir_m}'.")
             if fora_vocab:
                 print(f"[AVISO] Palavras próprias fora do vocabulário ignoradas: "
                       f"{', '.join(sorted(fora_vocab))}")
@@ -502,8 +505,9 @@ if __name__ == "__main__":
     parser.add_argument("--freq_csv",       default="data/palavras_por_frequencia.csv",
                         help="CSV de frequência gerado por ranquear_palavras.py")
     parser.add_argument("--dir_meus",       default=None,
-                        help="Pasta de features de vídeos próprios (PALAVRA/*.npy) "
-                             "para incluir no treino. Ex: data/meus_features")
+                        help="Pasta(s) de features de vídeos próprios (PALAVRA/*.npy) "
+                             "para incluir no treino, separadas por vírgula. "
+                             "Ex: data/meus_features,data/meus_anaclara/meus_features")
     args = parser.parse_args()
 
     treinar(args)

@@ -41,6 +41,10 @@ camera *args:
 camera-300:
     & "{{python}}" scripts/testar_camera.py --pesos models\saved_weights\1781288399662_modelo.pth --confianca 0.1 --sem_ood
 
+# DEMO: webcam com o melhor modelo atual (top-10, treinado com 3 sinalizantes — 98% no hold-out)
+demo:
+    & "{{python}}" scripts/testar_camera.py --pesos models\saved_weights\1783189508175_modelo.pth --confianca 0.3
+
 # 5) Coleta seus próprios vídeos. Ex: just coletar --palavras CASA,AMOR --reps 10
 coletar *args:
     & "{{python}}" scripts/training/coletar_videos.py {{args}}

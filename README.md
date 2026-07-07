@@ -143,10 +143,12 @@ Relatório por take (top-3 predições), por palavra e acurácia total.
 ### 8. Testar ao vivo pela webcam
 
 ```bash
+just demo      # melhor modelo atual (top-10, 3 sinalizantes — 98% no hold-out)
+# ou qualquer outro checkpoint:
 just camera --pesos models/saved_weights/XXX_modelo.pth
 ```
 
-Mostra o sinal reconhecido, a confiança, o vídeo de referência da palavra e rejeita entradas fora do vocabulário (detector OOD por KNN, cacheado em disco). `--sem_ood` desativa a rejeição; `--confianca` ajusta o limiar.
+Mostra o sinal reconhecido, a confiança, o vídeo de referência da palavra e rejeita entradas fora do vocabulário (detector OOD por KNN, cacheado em disco). `--sem_ood` desativa a rejeição; `--confianca` ajusta o limiar. Variantes do dicionário (QUE1/QUE2) são exibidas unificadas como "QUE".
 
 ---
 
