@@ -4,9 +4,9 @@ Projeto: S.I.N.A.I.S - Tradutor de LIBRAS
 
 Propósito:
     Baixar os 3 artefatos por palavra do Dicionário Digital do INES:
-      1. Vídeo (.mp4)         — execução do sinal em LIBRAS
-      2. Imagem do sinal (.jpg) — foto estática do sinal
-      3. Imagem da mão (.jpg) — configuração da mão inicial (Classification cue)
+      1. Vídeo (.mp4)         - execução do sinal em LIBRAS
+      2. Imagem do sinal (.jpg) - foto estática do sinal
+      3. Imagem da mão (.jpg) - configuração da mão inicial (Classification cue)
 
 Lógica (Passo a Passo):
     1. Buscar `palavras.js`, `assuntos.js` e `mao.js` e extrair os JSONs.
@@ -277,7 +277,7 @@ def run_downloader(assunto_filter: str | None = None) -> None:
 
         # Pula palavras sem vídeo .mp4.
         if not video_file or not video_file.endswith(".mp4"):
-            log.debug(f"[{i}/{total}] SKIP '{nome}' — sem vídeo .mp4 disponível.")
+            log.debug(f"[{i}/{total}] SKIP '{nome}' - sem vídeo .mp4 disponível.")
             skip_count += 1
             continue
 
@@ -351,7 +351,7 @@ if __name__ == "__main__":
     import argparse
 
     parser = argparse.ArgumentParser(
-        description="S.I.N.A.I.S — Downloader de Vídeos do Dicionário INES (LIBRAS)",
+        description="S.I.N.A.I.S - Downloader de Vídeos do Dicionário INES (LIBRAS)",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Exemplos de uso:

@@ -6,7 +6,7 @@ import base64
 from typing import Any
 
 # ══════════════════════════════════════════════════════════════════════════════
-# 1. Design System — Cyber-Premium Glassmorphism
+# 1. Design System - Cyber-Premium Glassmorphism
 # ══════════════════════════════════════════════════════════════════════════════
 
 def apply_cyber_premium_style() -> None:
@@ -396,7 +396,7 @@ def render_sidebar() -> None:
 
 def main() -> None:
     st.set_page_config(
-        page_title="S.I.N.A.I.S — Tradutor de LIBRAS",
+        page_title="S.I.N.A.I.S - Tradutor de LIBRAS",
         layout="wide",
         page_icon="🤟",
     )

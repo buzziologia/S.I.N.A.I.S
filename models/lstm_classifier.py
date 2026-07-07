@@ -6,8 +6,8 @@ class LIBRASClassifier(nn.Module):
     """
     LSTM bidirecional para classificação de sinais em LIBRAS.
 
-    Entrada : (batch, seq, 126)  — sequência temporal de landmarks das 2 mãos
-    Saída   : (batch, num_classes) — logits por classe
+    Entrada : (batch, seq, 126)  - sequência temporal de landmarks das 2 mãos
+    Saída   : (batch, num_classes) - logits por classe
 
     Arquitetura: LSTM bidirecional (2 camadas, hidden=256) → estado do último
     frame temporal (correto com pre-padding: zeros no início, sinal no fim) →
@@ -43,7 +43,7 @@ class LIBRASClassifier(nn.Module):
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         # x: (batch, seq, features)
         out, _ = self.lstm(x)
-        # Último frame — correto com pre-padding (zeros no início, sinal no fim)
+        # Último frame - correto com pre-padding (zeros no início, sinal no fim)
         last = out[:, -1, :]
         return self.classifier(last)
 

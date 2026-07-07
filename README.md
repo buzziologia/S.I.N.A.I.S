@@ -1,4 +1,4 @@
-# 🤟 S.I.N.A.I.S — Sistema Integrado de Tradução e Processamento de Sinais
+# 🤟 S.I.N.A.I.S - Sistema Integrado de Tradução e Processamento de Sinais
 
 **S.I.N.A.I.S** é um tradutor de LIBRAS (Língua Brasileira de Sinais) vídeo → texto em tempo real: a webcam captura o sinal, o MediaPipe extrai os landmarks das mãos e uma LSTM bidirecional classifica a palavra.
 
@@ -19,7 +19,7 @@ vídeo → MediaPipe Hands (126 features/frame = 2 mãos × 21 landmarks × XYZ)
       → palavra
 ```
 
-Cada frame vira um vetor de 126 valores: a mão rotulada `Left` pelo MediaPipe ocupa as posições 0:63 e a `Right` as posições 63:126 (mão ausente = zeros). As sequências são recortadas para a janela onde há mão detectada, ajustadas para 30 frames e normalizadas (translação ao pulso + escala) — **todo o pré-processamento vive em um único módulo (`models/preprocess.py`)**, compartilhado por treino, avaliação e câmera.
+Cada frame vira um vetor de 126 valores: a mão rotulada `Left` pelo MediaPipe ocupa as posições 0:63 e a `Right` as posições 63:126 (mão ausente = zeros). As sequências são recortadas para a janela onde há mão detectada, ajustadas para 30 frames e normalizadas (translação ao pulso + escala) - **todo o pré-processamento vive em um único módulo (`models/preprocess.py`)**, compartilhado por treino, avaliação e câmera.
 
 ---
 
@@ -73,7 +73,7 @@ pip install -r requirements.txt
 
 No Windows, defina `PYTHONUTF8=1` (variável de ambiente do usuário) para a saída dos scripts não quebrar acentos.
 
-Opcional: instale o [just](https://github.com/casey/just) (`winget install Casey.Just`) para usar os atalhos do `justfile` — os comandos abaixo mostram as duas formas.
+Opcional: instale o [just](https://github.com/casey/just) (`winget install Casey.Just`) para usar os atalhos do `justfile` - os comandos abaixo mostram as duas formas. Aponte o `just` para o seu Python definindo `SINAIS_PYTHON` (ex.: `$env:SINAIS_PYTHON = "python"` no PowerShell, com o env conda ativado).
 
 ---
 
@@ -143,7 +143,7 @@ Relatório por take (top-3 predições), por palavra e acurácia total.
 ### 8. Testar ao vivo pela webcam
 
 ```bash
-just demo      # melhor modelo atual (top-10, 3 sinalizantes — 98% no hold-out)
+just demo      # melhor modelo atual (top-10, 3 sinalizantes - 98% no hold-out)
 # ou qualquer outro checkpoint:
 just camera --pesos models/saved_weights/XXX_modelo.pth
 ```

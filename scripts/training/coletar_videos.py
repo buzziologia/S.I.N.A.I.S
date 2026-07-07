@@ -1,16 +1,16 @@
 """
-Aquisição de vídeos de teste pela webcam — grava VOCÊ sinalizando, para depois
+Aquisição de vídeos de teste pela webcam - grava VOCÊ sinalizando, para depois
 testar / fazer fine-tune do modelo nas suas próprias amostras (resolve o domain
 shift: o modelo passa a ver a SUA execução, não só a do dicionário INES).
 
 Para cada palavra grava N repetições. Os vídeos são salvos com o frame CRU
-(não-espelhado), igual à orientação de data/raw_videos — o extract_features.py
+(não-espelhado), igual à orientação de data/raw_videos - o extract_features.py
 espelha na hora de extrair, então a consistência treino/inferência é mantida.
 O preview na tela é espelhado só pra ficar natural pra você.
 
 Layout: um PAINEL no topo mostra os comandos, a configuração de mão e o vídeo de
 referência (com velocidade ajustável); a câmera fica embaixo, sem sobreposição.
-Cada rep mostra uma DICA DE VARIAÇÃO (mais perto/longe/rápido/ângulo) — variar
+Cada rep mostra uma DICA DE VARIAÇÃO (mais perto/longe/rápido/ângulo) - variar
 vale mais que repetir igual. Com --holdout N, as ÚLTIMAS N reps de cada palavra
 vão para uma pasta de teste separada (não usar no treino → avaliação honesta).
 Após gravar, você REVISA o take e escolhe salvar ou refazer.
@@ -45,6 +45,11 @@ LARG_LISTA    = 190   # largura (px) da coluna lateral com a lista de palavras
 
 
 def tem_display():
+    # DISPLAY/WAYLAND_DISPLAY são conceitos do X11/Wayland e só existem no Linux.
+    # Windows e macOS sempre têm display em sessão interativa - sem esta exceção,
+    # a checagem desligava o preview da câmera no Windows.
+    if sys.platform in ('win32', 'darwin'):
+        return True
     return bool(os.environ.get('DISPLAY') or os.environ.get('WAYLAND_DISPLAY'))
 
 
@@ -168,6 +173,16 @@ class RefPlayer:
             self.cap.release()
 
 
+def sem_acento(txt: str) -> str:
+    """
+    Remove acentos p/ exibição no OpenCV ('NÃO1' → 'NAO1'). As fontes Hershey
+    do cv2.putText só têm glifos ASCII - acentuados viram '??' na tela.
+    Só afeta a RENDERIZAÇÃO; nomes de pastas/arquivos mantêm o acento.
+    """
+    import unicodedata
+    return unicodedata.normalize('NFKD', txt).encode('ascii', 'ignore').decode('ascii')
+
+
 def _colar(painel, img, x_dir, label, cor, h_alvo):
     """Cola uma miniatura (alinhada à direita em x_dir) com borda+rótulo. Retorna o novo x_dir."""
     ww = int(img.shape[1] * h_alvo / img.shape[0])
@@ -192,7 +207,7 @@ def montar_painel(W, linhas, config_img, ref_frame, velocidade):
     for item in linhas:
         txt, cor = item[0], item[1]
         esc = item[2] if len(item) > 2 else 0.7
-        cv2.putText(p, txt, (14, y), FONT, esc, cor, 2, cv2.LINE_AA)
+        cv2.putText(p, sem_acento(txt), (14, y), FONT, esc, cor, 2, cv2.LINE_AA)
         y += 40
     return p
 
@@ -218,7 +233,8 @@ def montar_lista(Ws, H, palavras, estado, idx_atual):
     for k in range(ini, min(ini + n_vis, n)):
         y = y0 + (k - ini) * lh
         st = estado[k]
-        nome = palavras[k] if len(palavras[k]) <= 13 else palavras[k][:12] + '.'
+        nome = sem_acento(palavras[k])
+        nome = nome if len(nome) <= 13 else nome[:12] + '.'
         if st == 'feito':
             cor = (0, 255, 120); _icone_check(col, 12, y, cor)
         elif st == 'pulado':
@@ -257,7 +273,7 @@ def main(args):
     print(f"Reps/palavra: {args.reps}  (treino={n_treino}, hold-out={n_holdout}) | duração: {args.duracao}s")
     print(f"Saída treino: {args.saida}")
     if n_holdout:
-        print(f"Saída teste : {saida_ho}   (hold-out — NÃO usar no treino)")
+        print(f"Saída teste : {saida_ho}   (hold-out - NÃO usar no treino)")
 
     cap = cv2.VideoCapture(args.camera)
     if not cap.isOpened():
@@ -275,7 +291,7 @@ def main(args):
                            min_detection_confidence=0.5, min_tracking_confidence=0.5)
     os.makedirs(args.dir_features, exist_ok=True)
 
-    janela = "S.I.N.A.I.S — Coleta de vídeos"
+    janela = "S.I.N.A.I.S - Coleta de vídeos"
     if tem_display():
         cv2.namedWindow(janela, cv2.WINDOW_NORMAL)
         cv2.moveWindow(janela, 0, 0)

@@ -1,11 +1,13 @@
-# Atalhos de comandos do S.I.N.A.I.S  —  rode:  just <comando>
+# Atalhos de comandos do S.I.N.A.I.S  -  rode:  just <comando>
 # Ex.:  just train --top_k 300 --epochs 50
 #       just camera --pesos models/saved_weights/1781288399662_modelo.pth
 #
 # Precisa do programa `just` instalado (winget install --id Casey.Just).
 
-# Python do ambiente conda (não precisa ativar o env)
-python := "C:/Users/matbu/anaconda3/envs/sinais311/python.exe"
+# Python a usar. Defina SINAIS_PYTHON p/ apontar seu ambiente (ex: "python" com
+# o conda ativado, ou o caminho completo do python.exe do env sinais311).
+# Sem a variável, usa o caminho abaixo (máquina do Mateus).
+python := env_var_or_default("SINAIS_PYTHON", "C:/Users/matbu/anaconda3/envs/sinais311/python.exe")
 
 # UTF-8 em toda saída (acentos, ✓, ─ etc.)
 export PYTHONUTF8 := "1"
@@ -41,7 +43,7 @@ camera *args:
 camera-300:
     & "{{python}}" scripts/testar_camera.py --pesos models\saved_weights\1781288399662_modelo.pth --confianca 0.1 --sem_ood
 
-# DEMO: webcam com o melhor modelo atual (top-10, treinado com 3 sinalizantes — 98% no hold-out)
+# DEMO: webcam com o melhor modelo atual (top-10, treinado com 3 sinalizantes - 98% no hold-out)
 demo:
     & "{{python}}" scripts/testar_camera.py --pesos models\saved_weights\1783189508175_modelo.pth --confianca 0.3
 

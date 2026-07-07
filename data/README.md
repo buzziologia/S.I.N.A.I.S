@@ -1,6 +1,6 @@
-# 📂 data/ — Armazenamento de Dados do Pipeline
+# 📂 data/ - Armazenamento de Dados do Pipeline
 
-Esta pasta contém **todos os dados do projeto**, organizados em duas subpastas com responsabilidades distintas. Ambas estão no `.gitignore` — os dados **nunca vão para o repositório** (são pesados demais e regeneráveis).
+Esta pasta contém **todos os dados do projeto**, organizados em duas subpastas com responsabilidades distintas. Ambas estão no `.gitignore` - os dados **nunca vão para o repositório** (são pesados demais e regeneráveis).
 
 ---
 
@@ -16,7 +16,7 @@ Para obter os dados, execute os scripts da pasta `scripts/` conforme documentado
 
 ---
 
-## 📁 `raw_videos/` — Vídeos Brutos do INES
+## 📁 `raw_videos/` - Vídeos Brutos do INES
 
 Contém os vídeos `.mp4` e imagens de configuração de mão baixados do [Dicionário Digital do INES](https://dicionario.ines.gov.br/).
 
@@ -52,7 +52,7 @@ cat data/download_log.csv
 
 ---
 
-## 📁 `processed_features/` — Matrizes de Features Extraídas
+## 📁 `processed_features/` - Matrizes de Features Extraídas
 
 Contém as matrizes NumPy geradas pelo script `extract_landmarks.py` (Fase 2).
 Cada arquivo representa **uma sequência de 30 frames** de um sinal, já normalizada e pronta para o treinamento.
@@ -79,8 +79,8 @@ processed_features/
 |--------|--------|-----------|
 | `[0:63]` | Mão Esquerda (21 landmarks × XYZ) | 63 |
 | `[63:126]` | Mão Direita (21 landmarks × XYZ) | 63 |
-| `[126:138]` | Pose — Ombros (11, 12) + Cotovelos (13, 14) | 12 |
-| `[138:168]` | Face — Boca + Sobrancelhas (10 landmarks) | 30 |
+| `[126:138]` | Pose - Ombros (11, 12) + Cotovelos (13, 14) | 12 |
+| `[138:168]` | Face - Boca + Sobrancelhas (10 landmarks) | 30 |
 | **Total** | | **168** |
 
 > **Normalização aplicada:** Translação ao pulso (landmark 0) + escalonamento pela distância máxima ao dedo médio (landmark 12). Mão ausente → `np.zeros(63)`.
@@ -93,7 +93,7 @@ python scripts/data_augmentation.py     # gera variações
 
 ---
 
-## 📄 `download_log.csv` — Log de Progresso do Download
+## 📄 `download_log.csv` - Log de Progresso do Download
 
 Arquivo gerado automaticamente pelo `download_ines_videos.py`. Registra o status de cada palavra baixada para permitir **retomada automática** do download.
 

@@ -7,7 +7,7 @@ takes que NUNCA entraram no treino (nem como augmentação).
 
 Com --raw, avalia nos vídeos ORIGINAIS do INES (data/processed_features,
 filtrados às classes do modelo). Atenção: esses vídeos normalmente fizeram
-parte do treino — mede retenção do domínio INES, não generalização.
+parte do treino - mede retenção do domínio INES, não generalização.
 
 Uso:
     python scripts/avaliar_holdout.py --pesos models/saved_weights/XXX_modelo.pth
@@ -39,7 +39,7 @@ def coletar_amostras_holdout(dir_holdout: str, classes: list) -> list:
         if not os.path.isdir(pasta):
             continue
         if palavra not in classes:
-            print(f"[AVISO] '{palavra}' não está no vocabulário do modelo — ignorada.")
+            print(f"[AVISO] '{palavra}' não está no vocabulário do modelo - ignorada.")
             continue
         for arq in sorted(os.listdir(pasta)):
             if arq.endswith(".npy"):
@@ -73,7 +73,7 @@ def main():
                         help="Pasta PALAVRA/*.npy com as features de hold-out")
     parser.add_argument("--raw", action="store_true",
                         help="Avalia nos vídeos originais do INES (processed_features) "
-                             "em vez do hold-out — mede retenção, não generalização")
+                             "em vez do hold-out - mede retenção, não generalização")
     parser.add_argument("--dir_raw", default="data/processed_features",
                         help="Pasta dos .npy originais do INES (com --raw)")
     parser.add_argument("--dir_videos", default="data/raw_videos",
@@ -95,7 +95,7 @@ def main():
 
     if args.raw:
         amostras = coletar_amostras_raw(args.dir_raw, args.dir_videos, classes)
-        fonte = f"{args.dir_raw} (vídeos INES — estiveram no TREINO; mede retenção)"
+        fonte = f"{args.dir_raw} (vídeos INES - estiveram no TREINO; mede retenção)"
     else:
         amostras = coletar_amostras_holdout(args.dir_holdout, classes)
         fonte = args.dir_holdout

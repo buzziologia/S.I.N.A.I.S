@@ -1,4 +1,4 @@
-# 🧠 models/ — Modelos de Classificação
+# 🧠 models/ - Modelos de Classificação
 
 Esta pasta armazena a **definição da arquitetura** e os **pesos treinados** do classificador de sinais LIBRAS.
 
@@ -13,7 +13,7 @@ models/
     └── *.pth / *.h5      ← (gerado pelo train.py) Pesos treinados
 ```
 
-> `saved_weights/` está no `.gitignore` — arquivos de pesos binários não vão ao repositório.
+> `saved_weights/` está no `.gitignore` - arquivos de pesos binários não vão ao repositório.
 
 ---
 

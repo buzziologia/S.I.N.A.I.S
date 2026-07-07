@@ -1,5 +1,5 @@
 """
-Augmentação offline — gera N variações de cada .npy em data/augmented_features/.
+Augmentação offline - gera N variações de cada .npy em data/augmented_features/.
 
 Para cada arquivo em data/processed_features/ são criadas N cópias augmentadas,
 cada uma com uma semente aleatória diferente. O dataset de treino passa a ter

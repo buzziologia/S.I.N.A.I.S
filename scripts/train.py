@@ -27,7 +27,7 @@ from torch.utils.data import Dataset, DataLoader, random_split
 # Permite importar de models/ a partir da raiz do projeto
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 from models.lstm_classifier import LIBRASClassifier
-# Pré-processamento compartilhado com avaliar_holdout.py e testar_camera.py —
+# Pré-processamento compartilhado com avaliar_holdout.py e testar_camera.py -
 # toda transformação de sequência vive em models/preprocess.py (fonte única).
 from models.preprocess import (MAX_SEQ_LEN, INPUT_DIM, paddar_ou_truncar,
                                recortar_atividade, normalizar_landmarks, aumentar)
@@ -42,7 +42,7 @@ def _construir_mapa_classes(dir_videos: str, assunto: str = None) -> dict:
     Lê a estrutura raw_videos/ASSUNTO/PALAVRA/video.mp4 e retorna
     um dicionário {stem_do_arquivo: palavra}.
 
-    A classe é sempre a PALAVRA — ex: 'AMOR', 'CACHORRO', 'FUTEBOL' —
+    A classe é sempre a PALAVRA - ex: 'AMOR', 'CACHORRO', 'FUTEBOL' -
     para que o modelo aprenda a distinguir sinais individuais.
     Vídeos em 'NENHUM' (sem assunto definido) são incluídos normalmente,
     pois cada palavra ali também é uma classe própria.
@@ -74,7 +74,7 @@ def _construir_mapa_classes(dir_videos: str, assunto: str = None) -> dict:
 def _carregar_top_k(caminho_csv: str, k: int) -> set:
     """
     Lê as k palavras mais usadas do CSV de frequência (gerado por
-    ranquear_palavras.py — coluna 'palavra', já ordenado por frequência).
+    ranquear_palavras.py - coluna 'palavra', já ordenado por frequência).
     """
     import csv
     palavras = []
@@ -286,7 +286,7 @@ def treinar(args):
     exemplos = ', '.join(dataset.classes[:8])
     print(f"Exemplos de classes: {exemplos}{' ...' if num_classes > 8 else ''}")
 
-    # Split estratificado — garante todas as classes em treino/val/teste
+    # Split estratificado - garante todas as classes em treino/val/teste
     train_idx, val_idx, test_idx = _split_estratificado(dataset)
     n_train, n_val, n_test = len(train_idx), len(val_idx), len(test_idx)
 
@@ -361,7 +361,7 @@ def treinar(args):
             acertos += (logits.argmax(1) == y).sum().item()
             total += len(y)
 
-            # Progresso dentro da época (no máx. 1 atualização a cada ~5s) —
+            # Progresso dentro da época (no máx. 1 atualização a cada ~5s) -
             # sobrescreve a MESMA linha com '\r' (sem flood) e evita a sensação
             # de "travado" enquanto a primeira época processa tudo.
             agora = time.time()
@@ -446,22 +446,22 @@ def imprimir_relatorio(num_classes, n_train, n_val, n_test, epochs,
     elif test_acc >= 0.70:
         avaliacao = "Bom"
     elif test_acc >= 0.50:
-        avaliacao = "Razoável — considere mais dados ou mais épocas"
+        avaliacao = "Razoável - considere mais dados ou mais épocas"
     else:
-        avaliacao = "Fraco — verifique os dados e o mapeamento de classes"
+        avaliacao = "Fraco - verifique os dados e o mapeamento de classes"
 
     # Diagnóstico de overfitting
     gap = melhor_val_acc - test_acc
     if melhor_val_acc > 0 and (melhor_val_acc - test_acc) > 0.15:
         diagnostico = "Possível overfitting (val_acc muito maior que test_acc)"
     elif test_acc < 1 / num_classes + 0.05:
-        diagnostico = "Acurácia próxima ao acaso — modelo pode não estar aprendendo"
+        diagnostico = "Acurácia próxima ao acaso - modelo pode não estar aprendendo"
     else:
         diagnostico = "Sem sinais evidentes de overfitting"
 
     sep = "═" * 52
     print(f"\n{sep}")
-    print(f"  RELATÓRIO DE TREINO — S.I.N.A.I.S")
+    print(f"  RELATÓRIO DE TREINO - S.I.N.A.I.S")
     print(sep)
     print(f"  Classes treinadas   : {num_classes}")
     print(f"  Amostras  treino    : {n_train}")

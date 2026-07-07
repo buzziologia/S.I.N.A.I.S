@@ -1,5 +1,5 @@
 """
-Teste em tempo real — captura a câmera, extrai landmarks com MediaPipe,
+Teste em tempo real - captura a câmera, extrai landmarks com MediaPipe,
 alimenta o modelo LSTM e exibe o sinal identificado na tela.
 
 Uso:
@@ -34,7 +34,7 @@ mp_draw     = mp.solutions.drawing_utils
 def extrair_landmarks(results) -> np.ndarray:
     """
     Extrai vetor CRU (126,) das duas mãos de um frame processado pelo MediaPipe.
-    A mão 'Left' ocupa o bloco 0:63 e a 'Right' o bloco 63:126 — mesma regra do
+    A mão 'Left' ocupa o bloco 0:63 e a 'Right' o bloco 63:126 - mesma regra do
     extract_features.py. Mão ausente → bloco de zeros.
     A normalização acontece depois, na janela inteira (preparar_sequencia),
     exatamente como no treino.
@@ -103,7 +103,7 @@ def construir_banco_ood(modelo, classes, device, caminho_pesos,
     """
     Monta um banco de features das amostras de TREINO das classes do modelo e
     calibra um limiar de distância KNN (percentil) para rejeitar entradas OOD.
-    O banco é cacheado em disco ao lado dos pesos (*_ood_kK_pP.npz) — montar do
+    O banco é cacheado em disco ao lado dos pesos (*_ood_kK_pP.npz) - montar do
     zero exige uma passada do modelo por TODAS as amostras, o que é lento em
     vocabulários grandes. Retorna dict {banco, k, limiar} ou None.
     """
@@ -193,7 +193,7 @@ def mapear_videos(rotulos, bases, dir_videos='data/raw_videos'):
 
 
 def texto_caixa(frame, txt, org, escala=0.7, cor=(255, 255, 255), thick=2):
-    """Desenha texto com uma caixa preta atrás — legível sobre qualquer fundo."""
+    """Desenha texto com uma caixa preta atrás - legível sobre qualquer fundo."""
     (tw, th), base = cv2.getTextSize(txt, cv2.FONT_HERSHEY_SIMPLEX, escala, thick)
     x, y = org
     pad = 7
@@ -261,7 +261,7 @@ def main(args):
 
     modelo.load_state_dict(state)
     modelo.eval()
-    print(f"Modelo carregado — {num_classes} classes | hidden={hidden_dim} | dispositivo: {device}")
+    print(f"Modelo carregado - {num_classes} classes | hidden={hidden_dim} | dispositivo: {device}")
 
     # Fusão de variantes na CLASSIFICAÇÃO: o modelo continua prevendo QUE1/QUE2,
     # mas as probabilidades são somadas e o rótulo exibido é a palavra-base.
@@ -293,7 +293,7 @@ def main(args):
     )
 
     buffer_frames  = collections.deque(maxlen=MAX_SEQ_LEN)
-    sinal_atual    = "—"
+    sinal_atual    = "-"
     confianca_atual = 0.0
     status         = ""   # motivo de não exibir sinal (sem mão / fora do vocabulário)
     # Suaviza predições: mantém a última predição por N frames para evitar flicker
@@ -359,11 +359,11 @@ def main(args):
             if frac_maos < args.min_maos:
                 status = "sem mao"
                 historico_pred.clear()
-                sinal_atual, confianca_atual = "—", 0.0
+                sinal_atual, confianca_atual = "-", 0.0
             elif eh_ood:
                 status = "fora do vocabulario"
                 historico_pred.clear()
-                sinal_atual, confianca_atual = "—", 0.0
+                sinal_atual, confianca_atual = "-", 0.0
             else:
                 status = ""
                 if conf >= conf_threshold:
@@ -424,7 +424,7 @@ def main(args):
         # Instrução no rodapé
         texto_caixa(frame, "Q: sair", (15, h - 28), escala=0.6, cor=(220, 220, 220))
 
-        cv2.imshow("S.I.N.A.I.S — Reconhecimento de Libras", frame)
+        cv2.imshow("S.I.N.A.I.S - Reconhecimento de Libras", frame)
 
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break

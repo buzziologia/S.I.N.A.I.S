@@ -1,0 +1,56 @@
+S.I.N.A.I.S - Comandos para rodar o MELHOR MODELO
+===================================================
+
+Melhor modelo: models/saved_weights/1783189508175_modelo.pth
+(top-10 palavras, treinado com INES + 3 sinalizantes - 98,3% nos hold-outs)
+
+Antes de tudo, ative o ambiente (Python 3.11 com as dependências instaladas):
+
+    conda activate sinais311
+
+
+1) RECONHECIMENTO PELA WEBCAM (demo)
+------------------------------------
+
+    python scripts/testar_camera.py --pesos models/saved_weights/1783189508175_modelo.pth --confianca 0.3
+
+- Mostra o sinal reconhecido, a confiança e o vídeo de referência do INES.
+- QUE1/QUE2 aparecem unificados como "QUE".
+- Se o detector de fora-do-vocabulário (OOD) rejeitar demais, adicione:  --sem_ood
+- Sair: tecla Q
+
+
+2) AVALIAR O MODELO NOS HOLD-OUTS (métrica honesta)
+---------------------------------------------------
+
+    # hold-out do Mateus (data/meus_features_holdout)
+    python scripts/avaliar_holdout.py --pesos models/saved_weights/1783189508175_modelo.pth
+
+    # hold-out da Ana Clara
+    python scripts/avaliar_holdout.py --pesos models/saved_weights/1783189508175_modelo.pth --dir_holdout data/meus_anaclara/meus_features_holdout
+
+    # hold-out do Vinícios
+    python scripts/avaliar_holdout.py --pesos models/saved_weights/1783189508175_modelo.pth --dir_holdout data/meus_vini/meus_features_holdout
+
+    # vídeos originais do INES (estiveram no treino - mede retenção)
+    python scripts/avaliar_holdout.py --pesos models/saved_weights/1783189508175_modelo.pth --raw
+
+Resultados esperados: 19/20 (Mateus), 20/20 (Ana Clara), 20/20 (Vinícios), 10/10 (INES).
+
+
+3) COLETAR NOVOS VÍDEOS (para expandir o treino)
+------------------------------------------------
+
+    python scripts/training/coletar_videos.py --top_k 10 --reps 6 --holdout 2
+
+- ESPAÇO grava | S/ENTER salva o take | R refaz | P pula | Q sai
+
+
+Observações
+-----------
+- Sem --pesos, os scripts usam automaticamente o *_modelo.pth mais recente
+  de models/saved_weights/ (que hoje é o próprio 1783189508175).
+- Com o programa `just` instalado, os atalhos equivalentes são:
+  just demo   |   just avaliar --pesos ...   |   just coletar ...
+  (defina $env:SINAIS_PYTHON = "python" se não for a máquina do Mateus)
+- Onde estão os checkpoints: veja checkpoints.txt

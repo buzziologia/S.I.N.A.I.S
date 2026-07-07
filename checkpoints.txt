@@ -1,0 +1,66 @@
+S.I.N.A.I.S - Onde estão os checkpoints da rede neural
+=======================================================
+
+Pasta:  models/saved_weights/
+
+Cada treino gera um PAR de arquivos com o mesmo prefixo (timestamp do treino):
+
+  {id}_modelo.pth     -> os pesos da rede (state_dict do PyTorch, salvo na
+                         melhor época de validação pelo scripts/train.py)
+  {id}_classes.json   -> o mapeamento índice -> palavra daquele treino
+                         (os scripts localizam automaticamente pelo prefixo)
+
+Arquivos {id}_ood_*.npz na mesma pasta NÃO são checkpoints: são o cache do
+banco de detecção fora-do-vocabulário (OOD) usado pelo testar_camera.py,
+gerado a partir do modelo na primeira execução.
+
+
+Checkpoints atuais (do mais importante ao mais antigo)
+------------------------------------------------------
+
+1783189508175_modelo.pth   *** MELHOR MODELO ***
+    Top-10 palavras, treinado com INES + vídeos de 3 sinalizantes.
+    98,3% nos hold-outs (59/60).
+    É o modelo usado na demo.
+
+1783180403830_modelo.pth
+    Top-10, INES + vídeos de um sinalizante. 80% no hold-out do Mateus
+    (95% com QUE1/QUE2 unificados).
+
+1783180400792_modelo.pth
+    Top-10, SÓ vídeos do INES. 40-45% nos hold-outs - é o baseline
+    que comprova o domain shift (1 sinalizante não generaliza).
+
+1783178324268_modelo.pth
+    Top-10, INES + Mateus (treino anterior ao 1783180403830).
+    100% no hold-out do Mateus com QUE unificado.
+
+1783178320956_modelo.pth
+    Top-10, só INES (treino anterior ao 1783180400792).
+
+1781288399662_modelo.pth
+    Top-300 palavras (1 vídeo INES/palavra + augmentação). 21% test.
+
+1781287974631_modelo.pth
+    Top-100 palavras (idem). ~57% test com 40 épocas.
+
+
+Como usar um checkpoint
+-----------------------
+
+    # webcam
+    python scripts/testar_camera.py --pesos models/saved_weights/{id}_modelo.pth
+
+    # avaliação no hold-out
+    python scripts/avaliar_holdout.py --pesos models/saved_weights/{id}_modelo.pth
+
+    # em código Python:
+    #   modelo = LIBRASClassifier(input_dim=126, num_classes=N)
+    #   modelo.load_state_dict(torch.load('models/saved_weights/{id}_modelo.pth'))
+    #   (N = len(classes) do {id}_classes.json)
+
+Sem --pesos, os scripts carregam o *_modelo.pth mais recente da pasta.
+
+Todos os checkpoints acima estão versionados no git (acompanham o clone).
+Um novo treino (scripts/train.py) cria um novo par {timestamp}_* na mesma
+pasta, sem sobrescrever os anteriores.

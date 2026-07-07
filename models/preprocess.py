@@ -3,7 +3,7 @@ Pré-processamento compartilhado de sequências de landmarks (N, 126).
 
 Fonte ÚNICA das transformações usadas em treino, avaliação e inferência ao
 vivo (train.py, avaliar_holdout.py, testar_camera.py). Qualquer mudança de
-convenção — janela, recorte, normalização — deve acontecer AQUI, para que
+convenção - janela, recorte, normalização - deve acontecer AQUI, para que
 treino e inferência nunca divirjam.
 
 Convenção do vetor de frame (126,):
@@ -11,7 +11,7 @@ Convenção do vetor de frame (126,):
     slot 1 (63:126) = mão rotulada 'Right'
     mão ausente     = bloco de 63 zeros
 
-Todas as funções são vetorizadas em numpy (sem loop Python por frame) —
+Todas as funções são vetorizadas em numpy (sem loop Python por frame) -
 são executadas a cada __getitem__ do treino, então desempenho importa.
 """
 import re
@@ -43,7 +43,7 @@ def recortar_atividade(tensor: np.ndarray, margem: int = 2) -> np.ndarray:
     """
     Corta a sequência para a janela onde alguma mão foi detectada (± margem).
     Vídeos coletados pela webcam têm o sinal no MEIO do take (contagem antes,
-    braço abaixando depois) — sem este recorte, manter os últimos 30 frames
+    braço abaixando depois) - sem este recorte, manter os últimos 30 frames
     pode descartar o sinal inteiro e entregar um tensor todo de zeros.
     Nos vídeos INES o sinal ocupa o clipe quase todo, então o recorte é neutro.
     """
@@ -85,7 +85,7 @@ def preparar_sequencia(tensor: np.ndarray) -> np.ndarray:
     """
     Pipeline padrão de inferência: recorta a janela de atividade, ajusta para
     MAX_SEQ_LEN frames e normaliza. É EXATAMENTE o que o treino aplica antes
-    da augmentation — use isto em qualquer avaliação ou inferência.
+    da augmentation - use isto em qualquer avaliação ou inferência.
     """
     t = np.asarray(tensor, dtype=np.float32)
     return normalizar_landmarks(paddar_ou_truncar(recortar_atividade(t)))
